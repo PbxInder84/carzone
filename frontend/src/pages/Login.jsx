@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -51,13 +51,15 @@ const Login = () => {
   }
   
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+    <section className="page-container">
+      <div className="max-w-md mx-auto">
+        <div className="card">
           <div className="text-center mb-8">
-            <FaSignInAlt className="text-4xl text-primary-600 mx-auto mb-2" />
-            <h1 className="text-3xl font-bold">Login</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaSignInAlt className="text-3xl text-primary-600" />
+            </div>
+            <h1 className="page-title mb-2">Login</h1>
+            <p className="text-gray-600">Sign in to your account</p>
           </div>
           
           <Formik

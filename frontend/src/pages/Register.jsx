@@ -71,13 +71,15 @@ const Register = () => {
   }
   
   return (
-    <section className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
+    <section className="page-container">
+      <div className="max-w-md mx-auto">
+        <div className="card">
           <div className="text-center mb-8">
-            <FaUserPlus className="text-4xl text-primary-600 mx-auto mb-2" />
-            <h1 className="text-3xl font-bold">Register</h1>
-            <p className="text-gray-600 mt-2">Create a new account</p>
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaUserPlus className="text-3xl text-primary-600" />
+            </div>
+            <h1 className="page-title mb-2">Register</h1>
+            <p className="text-gray-600">Create your new account</p>
           </div>
           
           <Formik
@@ -161,7 +163,7 @@ const Register = () => {
                 
                 <div className="mb-6">
                   <label htmlFor="role" className="block text-gray-700 font-medium mb-2">
-                    Register as
+                    Account Type
                   </label>
                   <Field
                     as="select"
@@ -184,7 +186,7 @@ const Register = () => {
                   className="btn-primary w-full"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Registering...' : 'Register'}
+                  {isSubmitting ? 'Creating Account...' : 'Register'}
                 </button>
               </Form>
             )}

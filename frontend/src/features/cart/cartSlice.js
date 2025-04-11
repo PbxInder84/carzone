@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import apiClient from '../../utils/apiClient';
 
 const initialState = {
   cartItems: [],
@@ -15,15 +15,7 @@ export const getCartItems = createAsyncThunk(
   'cart/getItems',
   async (_, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      
-      const response = await axios.get('/api/cart', config);
+      const response = await apiClient.get('/api/cart');
       return response.data;
     } catch (error) {
       const message = 
@@ -43,15 +35,7 @@ export const addToCart = createAsyncThunk(
   'cart/addItem',
   async (cartData, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      
-      const response = await axios.post('/api/cart', cartData, config);
+      const response = await apiClient.post('/api/cart', cartData);
       return response.data;
     } catch (error) {
       const message = 
@@ -71,18 +55,9 @@ export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
   async (cartData, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      
-      const response = await axios.put(`/api/cart/${cartData.id}`, 
-        { quantity: cartData.quantity }, 
-        config
-      );
+      const response = await apiClient.put(`/api/cart/${cartData.id}`, { 
+        quantity: cartData.quantity 
+      });
       
       return response.data;
     } catch (error) {
@@ -103,16 +78,7 @@ export const removeFromCart = createAsyncThunk(
   'cart/removeItem',
   async (id, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      
-      await axios.delete(`/api/cart/${id}`, config);
-      
+      await apiClient.delete(`/api/cart/${id}`);
       return id;
     } catch (error) {
       const message = 
@@ -132,16 +98,7 @@ export const clearCart = createAsyncThunk(
   'cart/clearCart',
   async (_, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      
-      await axios.delete('/api/cart', config);
-      
+      await apiClient.delete('/api/cart');
       return;
     } catch (error) {
       const message = 

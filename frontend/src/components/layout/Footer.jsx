@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaFacebookF, FaTwitter, FaInstagram, FaYoutube, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCar } from 'react-icons/fa';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,12 +10,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4 flex items-center">
-              <span className="text-white">Care</span>
-              <span className="text-secondary-400">Zone</span>
+            <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
+              <FaCar className="text-secondary-400" />
+              <div className="flex">
+                <span className="text-white">Car</span>
+                <span className="text-secondary-400">Zone</span>
+              </div>
             </h3>
             <p className="mb-4 text-gray-300">
-              Your one-stop shop for premium car accessories. Enhance your driving experience with our curated collection of quality products.
+              Your one-stop shop for premium car accessories and parts. Enhance your driving experience with our curated collection of quality automotive products.
             </p>
             <div className="flex space-x-4">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-secondary-400 transition duration-300">
@@ -113,7 +116,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <FaEnvelope className="text-secondary-400" />
-                <span className="text-gray-300">info@carezone.com</span>
+                <span className="text-gray-300">info@carzone.com</span>
               </li>
             </ul>
           </div>
@@ -124,7 +127,7 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            &copy; {currentYear} CareZone. All rights reserved.
+            &copy; {currentYear} CarZone. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link to="/privacy-policy" className="text-gray-400 text-sm hover:text-secondary-400 transition duration-300">
