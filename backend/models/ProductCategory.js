@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
 const ProductCategory = sequelize.define(
-  'ProductCategory',
+  'product_categories',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -17,12 +17,20 @@ const ProductCategory = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    image_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    icon: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    }
   },
   {
+    tableName: 'product_categories',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    tableName: 'Product_Categories'
+    updatedAt: 'updated_at'
   }
 );
 

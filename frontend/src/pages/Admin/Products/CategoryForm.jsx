@@ -14,12 +14,14 @@ const CategoryForm = () => {
     name: '',
     description: '',
     icon: '',
+    image_url: '',
   });
   
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [useImageUrl, setUseImageUrl] = useState(false);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -34,9 +36,13 @@ const CategoryForm = () => {
           name: category.name || '',
           description: category.description || '',
           icon: category.icon || '',
+          image_url: category.image_url || '',
         });
         
-        if (category.image) {
+        if (category.image_url) {
+          setImagePreview(category.image_url);
+          setUseImageUrl(true);
+        } else if (category.image) {
           setImagePreview(category.image);
         }
       } catch (error) {
@@ -56,6 +62,10 @@ const CategoryForm = () => {
       ...prev,
       [name]: value
     }));
+
+    if (name === 'image_url' && value && useImageUrl) {
+      setImagePreview(value);
+    }
   };
   
   const handleImageChange = (e) => {
@@ -64,6 +74,20 @@ const CategoryForm = () => {
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
+      setFormData(prev => ({ ...prev, image_url: '' }));
+      setUseImageUrl(false);
+    }
+  };
+
+  const toggleImageInputMethod = () => {
+    setUseImageUrl(!useImageUrl);
+    if (!useImageUrl) {
+      setImageFile(null);
+    } else {
+      setFormData(prev => ({ ...prev, image_url: '' }));
+      if (!imageFile) {
+        setImagePreview('');
+      }
     }
   };
   
@@ -72,30 +96,39 @@ const CategoryForm = () => {
     setIsSaving(true);
     
     try {
-      // Validate form
       if (!formData.name) {
         toast.error('Category name is required');
         setIsSaving(false);
         return;
       }
       
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name.trim());
+      
+      if (formData.description) {
+        formDataToSend.append('description', formData.description);
+      }
+      
+      if (formData.icon) {
+        formDataToSend.append('icon', formData.icon);
+      }
+      
+      if (imageFile) {
+        formDataToSend.append('category_image', imageFile);
+      } else if (formData.image_url && formData.image_url.trim() !== '') {
+        formDataToSend.append('image_url', formData.image_url.trim());
+      }
+      
       let response;
       
-      // Create or update category
       if (isEditMode) {
-        response = await categoryService.updateCategory(id, formData);
+        response = await categoryService.updateCategory(id, formDataToSend);
         toast.success('Category updated successfully');
       } else {
-        response = await categoryService.createCategory(formData);
+        response = await categoryService.createCategory(formDataToSend);
         toast.success('Category created successfully');
       }
       
-      // Upload image if selected
-      if (imageFile && response.data && response.data.id) {
-        await categoryService.uploadCategoryImage(response.data.id, imageFile);
-      }
-      
-      // Redirect back to categories management
       navigate('/dashboard/categories');
       
     } catch (error) {
@@ -158,27 +191,17 @@ const CategoryForm = () => {
                 
                 <div>
                   <label htmlFor="icon" className="block text-sm font-medium text-gray-700 mb-1">
-                    Icon Class (Font Awesome)
+                    Icon (CSS class or code)
                   </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      id="icon"
-                      name="icon"
-                      value={formData.icon}
-                      onChange={handleChange}
-                      placeholder="e.g. fa-car"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    />
-                    {formData.icon && (
-                      <div className="ml-3 flex items-center text-gray-500">
-                        <i className={`fas ${formData.icon} text-xl`}></i>
-                      </div>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Enter a Font Awesome icon class name (e.g. fa.car, fa-tools)
-                  </p>
+                  <input
+                    type="text"
+                    id="icon"
+                    name="icon"
+                    value={formData.icon}
+                    onChange={handleChange}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="e.g., FaCar (for rendering icons in UI)"
+                  />
                 </div>
               </div>
             </div>
@@ -190,80 +213,107 @@ const CategoryForm = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h2 className="text-lg font-medium mb-4">Category Image</h2>
               
-              <div className="text-center">
-                {imagePreview ? (
-                  <div className="mb-4">
-                    <img
-                      src={imagePreview}
-                      alt="Category Preview"
-                      className="h-48 w-auto mx-auto object-contain border rounded"
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Image Source</span>
+                  <button
+                    type="button"
+                    onClick={toggleImageInputMethod}
+                    className="text-sm text-primary-600 hover:text-primary-800"
+                  >
+                    {useImageUrl ? 'Upload Image File Instead' : 'Use Image URL Instead'}
+                  </button>
+                </div>
+                
+                {useImageUrl ? (
+                  <div>
+                    <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">
+                      Image URL
+                    </label>
+                    <input
+                      type="url"
+                      id="image_url"
+                      name="image_url"
+                      value={formData.image_url}
+                      onChange={handleChange}
+                      placeholder="https://example.com/image.jpg"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     />
                   </div>
                 ) : (
-                  <div className="h-48 w-full flex items-center justify-center bg-gray-200 rounded mb-4">
-                    <FaImage className="text-gray-400 text-4xl" />
+                  <div className="text-center">
+                    {imagePreview ? (
+                      <div className="mb-4">
+                        <img
+                          src={imagePreview}
+                          alt="Category Preview"
+                          className="h-48 w-auto mx-auto object-contain border rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview('');
+                            setImageFile(null);
+                          }}
+                          className="mt-2 text-sm text-red-600 hover:text-red-800"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="h-48 w-full flex items-center justify-center bg-gray-200 rounded mb-4">
+                        <FaImage className="text-gray-400 text-4xl" />
+                      </div>
+                    )}
+                    
+                    <div>
+                      <label htmlFor="image" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <FaUpload className="mr-2 -ml-1 text-gray-500" />
+                        {imagePreview ? 'Change Image' : 'Upload Image'}
+                      </label>
+                      <input
+                        type="file"
+                        id="image"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="sr-only"
+                      />
+                    </div>
                   </div>
                 )}
-                
-                <div>
-                  <label htmlFor="image" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                    <FaUpload className="mr-2 -ml-1 text-gray-500" />
-                    {imagePreview ? 'Change Image' : 'Upload Image'}
-                  </label>
-                  <input
-                    type="file"
-                    id="image"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="sr-only"
-                  />
-                </div>
               </div>
             </div>
             
             {/* Action Buttons */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <div className="flex flex-col space-y-3">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <FaSave className="mr-2 -ml-1" />
-                  {isSaving ? 'Saving...' : 'Save Category'}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard/categories')}
-                  className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  Cancel
-                </button>
-                
-                {isEditMode && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm('Are you sure you want to delete this category?')) {
-                        categoryService.deleteCategory(id)
-                          .then(() => {
-                            toast.success('Category deleted successfully');
-                            navigate('/dashboard/categories');
-                          })
-                          .catch(error => {
-                            console.error('Error deleting category:', error);
-                            toast.error('Failed to delete category');
-                          });
-                      }
-                    }}
-                    className="inline-flex justify-center items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    <FaTrash className="mr-2 -ml-1" />
-                    Delete Category
-                  </button>
+            <div className="space-y-3 pt-6">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FaSave className="mr-2" />
+                    {isEditMode ? 'Update Category' : 'Create Category'}
+                  </>
                 )}
-              </div>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard/categories')}
+                className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

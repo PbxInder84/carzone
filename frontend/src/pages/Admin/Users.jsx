@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash, FaSearch, FaUserShield, FaStore, FaUser } from 'react-icons/fa';
-import * as userService from '../../db/userService';
+import { useDispatch, useSelector } from 'react-redux';
+import { getUsers, deleteUser, updateUserRole } from '../../features/users/userSlice';
 import Spinner from '../../components/common/Spinner';
 import { toast } from 'react-toastify';
 
@@ -12,43 +13,34 @@ const USER_ROLES = {
 };
 
 const Users = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { users, isLoading, pagination, total } = useSelector((state) => state.users);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const pageSize = 10;
 
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, roleFilter, searchTerm]);
+  }, [currentPage, roleFilter, dispatch]);
 
   const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      // Use getMockUsers for development until API is ready
-      const response = userService.getMockUsers(currentPage, pageSize);
-      
-      setUsers(response.data);
-      setTotalPages(response.pagination.pages);
-      setLoading(false);
-
-      // When API is ready, uncomment the following code:
-      /*
-      const response = await userService.getAllUsers(currentPage, pageSize, {
-        search: searchTerm,
-        role: roleFilter !== 'all' ? roleFilter : undefined,
-        sortBy: 'createdAt',
-      });
-      
-      setUsers(response.data);
-      setTotalPages(response.pagination.pages);
-      */
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setLoading(false);
+    const filters = {};
+    
+    if (roleFilter !== 'all') {
+      filters.role = roleFilter;
     }
+    
+    if (searchTerm.trim()) {
+      filters.search = searchTerm;
+    }
+    
+    dispatch(getUsers({
+      page: currentPage,
+      limit: pageSize,
+      filters
+    }));
   };
 
   const handleSearch = (e) => {
@@ -90,28 +82,18 @@ const Users = () => {
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await userService.updateUser(userId, { role: newRole });
-      setUsers(
-        users.map((user) => 
-          user.id === userId ? { ...user, role: newRole } : user
-        )
-      );
-      toast.success(`User role updated to ${newRole}`);
+      await dispatch(updateUserRole({ id: userId, role: newRole })).unwrap();
     } catch (error) {
       console.error('Error updating user role:', error);
-      toast.error('Failed to update user role');
     }
   };
 
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        await userService.deleteUser(userId);
-        setUsers(users.filter(user => user.id !== userId));
-        toast.success('User deleted successfully');
+        await dispatch(deleteUser(userId)).unwrap();
       } catch (error) {
         console.error('Error deleting user:', error);
-        toast.error('Failed to delete user');
       }
     }
   };
@@ -184,7 +166,7 @@ const Users = () => {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <Spinner />
         ) : (
           <>
@@ -281,9 +263,9 @@ const Users = () => {
             {/* Pagination */}
             <div className="flex justify-between items-center mt-6">
               <div className="text-sm text-gray-700">
-                Showing {(currentPage - 1) * pageSize + 1} to{' '}
-                {Math.min(currentPage * pageSize, users.length + (currentPage - 1) * pageSize)}{' '}
-                of {totalPages * pageSize} results
+                Showing {users.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+                {Math.min(currentPage * pageSize, total)}{' '}
+                of {total} results
               </div>
               <div className="flex">
                 <button
@@ -294,8 +276,8 @@ const Users = () => {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(Math.min(pagination.total_pages, currentPage + 1))}
+                  disabled={currentPage === pagination.total_pages || pagination.total_pages === 0}
                   className="px-3 py-1 border rounded-r-lg bg-white text-gray-700 disabled:opacity-50"
                 >
                   Next

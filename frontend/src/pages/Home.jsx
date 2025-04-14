@@ -2,17 +2,20 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { getProducts } from '../features/products/productSlice';
+import { getCategories } from '../features/categories/categorySlice';
 import ProductCard from '../components/products/ProductCard';
 import Spinner from '../components/layout/Spinner';
-import { FaCar, FaTools, FaWrench, FaLightbulb, FaStar, FaChevronDown, FaShieldAlt, FaShippingFast, FaCreditCard } from 'react-icons/fa';
+import { FaCar, FaTools, FaWrench, FaLightbulb, FaStar, FaChevronDown, FaShieldAlt, FaShippingFast, FaCreditCard, FaTag } from 'react-icons/fa';
 
 const Home = () => {
   const dispatch = useDispatch();
   
   const { products, isLoading } = useSelector((state) => state.products);
+  const { categories, isLoading: categoriesLoading } = useSelector((state) => state.categories);
   
   useEffect(() => {
     dispatch(getProducts({ limit: 8, sort_by: 'created_at', sort_dir: 'DESC' }));
+    dispatch(getCategories());
   }, [dispatch]);
   
   const scrollToContent = () => {
@@ -22,7 +25,21 @@ const Home = () => {
     });
   };
   
-  const categories = [
+  // Default icon mapping for categories
+  const getCategoryIcon = (categoryName) => {
+    const name = categoryName?.toLowerCase() || '';
+    
+    if (name.includes('interior')) return <FaCar className="text-4xl text-primary-600 group-hover:text-white transition duration-300" />;
+    if (name.includes('exterior')) return <FaWrench className="text-4xl text-primary-600 group-hover:text-white transition duration-300" />;
+    if (name.includes('electronic')) return <FaLightbulb className="text-4xl text-primary-600 group-hover:text-white transition duration-300" />;
+    if (name.includes('tool')) return <FaTools className="text-4xl text-primary-600 group-hover:text-white transition duration-300" />;
+    
+    // Default icon if no match
+    return <FaTag className="text-4xl text-primary-600 group-hover:text-white transition duration-300" />;
+  };
+  
+  // Fallback categories in case API fails or no categories are available
+  const fallbackCategories = [
     {
       id: 'interior',
       name: 'Interior Accessories',
@@ -48,6 +65,16 @@ const Home = () => {
       description: 'Quality tools for maintenance and repairs.'
     }
   ];
+  
+  // Use API categories if available, otherwise use fallback
+  const displayCategories = categories && categories.length > 0 
+    ? categories.slice(0, 4).map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        icon: getCategoryIcon(cat.name),
+        description: cat.description || `Browse our ${cat.name} collection.`
+      })) 
+    : fallbackCategories;
   
   return (
     <div className="pt-0 mt-0">
@@ -116,25 +143,32 @@ const Home = () => {
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((category) => (
-              <Link 
-                key={category.id}
-                to={`/products?category=${category.id}`}
-                className="bg-white p-6 rounded-lg shadow-md group hover:bg-primary-600 transition duration-300"
-              >
-                <div className="flex flex-col items-center text-center">
-                  {category.icon}
-                  <h3 className="text-xl font-semibold my-4 group-hover:text-white transition duration-300">
-                    {category.name}
-                  </h3>
-                  <p className="text-gray-600 group-hover:text-white transition duration-300">
-                    {category.description}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          
+          {categoriesLoading ? (
+            <div className="flex justify-center">
+              <Spinner />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {displayCategories.map((category) => (
+                <Link 
+                  key={category.id}
+                  to={`/products?category=${category.id}`}
+                  className="bg-white p-6 rounded-lg shadow-md group hover:bg-primary-600 transition duration-300"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    {category.icon}
+                    <h3 className="text-xl font-semibold my-4 group-hover:text-white transition duration-300">
+                      {category.name}
+                    </h3>
+                    <p className="text-gray-600 group-hover:text-white transition duration-300">
+                      {category.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       
@@ -234,32 +268,47 @@ const Home = () => {
               </div>
             </div>
             
-            {/* Right content */}
+            {/* Right content - Featured Category Card */}
             <div className="md:w-4/12 bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 mt-8 md:mt-0">
-              <div className="flex items-start gap-4">
-                <div className="bg-secondary-100 rounded-lg p-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-secondary-600">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                  </svg>
+              {categoriesLoading ? (
+                <div className="flex justify-center py-8">
+                  <Spinner />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-2">Premium Interior Collection</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xl font-bold text-white">$199</span>
-                    <span className="text-sm text-gray-300 line-through">$249</span>
-                    <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded">20% OFF</span>
+              ) : (
+                <div className="flex items-start gap-4">
+                  <div className="bg-secondary-100 rounded-lg p-3">
+                    {(categories && categories[0]) ? 
+                      getCategoryIcon(categories[0].name) : 
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-secondary-600">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                      </svg>
+                    }
                   </div>
-                  <Link 
-                    to="/products/interior-collection" 
-                    className="inline-flex items-center text-secondary-300 hover:text-secondary-200 font-medium"
-                  >
-                    View Collection
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </Link>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {(categories && categories[0]) ? 
+                        `${categories[0].name} Collection` : 
+                        'Premium Interior Collection'}
+                    </h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl font-bold text-white">$199</span>
+                      <span className="text-sm text-gray-300 line-through">$249</span>
+                      <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded">20% OFF</span>
+                    </div>
+                    <Link 
+                      to={categories && categories[0] ? 
+                        `/products?category_id=${categories[0].id}` : 
+                        "/products"}
+                      className="inline-flex items-center text-secondary-300 hover:text-secondary-200 font-medium"
+                    >
+                      View Collection
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

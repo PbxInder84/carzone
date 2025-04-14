@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../../utils/apiClient';
+import apiClient from '../../db/apiClient';
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
@@ -17,7 +17,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      const response = await apiClient.post('/api/auth/register', userData);
+      const response = await apiClient.post('/auth/register', userData);
       
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data));
@@ -42,7 +42,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      const response = await apiClient.post('/api/auth/login', userData);
+      const response = await apiClient.post('/auth/login', userData);
       
       if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data));
@@ -67,7 +67,7 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   localStorage.removeItem('user');
   
   try {
-    await apiClient.get('/api/auth/logout');
+    await apiClient.get('/auth/logout');
   } catch (error) {
     console.log('Logout error:', error);
   }
@@ -78,7 +78,7 @@ export const getCurrentUser = createAsyncThunk(
   'auth/getCurrentUser',
   async (_, thunkAPI) => {
     try {
-      const response = await apiClient.get('/api/auth/me');
+      const response = await apiClient.get('/auth/me');
       return response.data;
     } catch (error) {
       const message = 

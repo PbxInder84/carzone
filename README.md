@@ -1,106 +1,148 @@
-# CareZone Car Accessories E-commerce Platform
+# Carzone - Car Accessories E-commerce Platform
 
-A full-stack web application for buying and selling car accessories online. The platform supports multiple user roles including admin, seller, and regular users.
+An e-commerce platform for car accessories built with the MERN stack (MySQL, Express, React, Node.js).
 
 ## Features
 
-### User Roles
-- **Admin**: Full control over the system. Can manage users, sellers, products, and orders.
-- **Seller**: Can create and manage their own products, view orders for their products, and manage shipping status.
-- **User (Customer)**: Can browse products, add to cart, place orders, track orders, and leave reviews.
-
-### Key Functionalities
-- User authentication and authorization
-- Product browsing and searching with filters
-- Shopping cart management
-- Order processing and tracking
+- User authentication and authorization with JWT
+- Admin dashboard for managing products, categories, orders, and users
+- Seller dashboard for managing products and orders
+- Customer shopping cart and checkout process
 - Product reviews and ratings
-- Seller dashboard for product management
-- Admin dashboard for overall system management
-- Responsive design for mobile and desktop
+- Responsive design using Tailwind CSS
 
 ## Tech Stack
 
-### Frontend
-- React.js
-- Redux Toolkit for state management
-- React Router for navigation
-- Tailwind CSS for styling
-- Formik & Yup for form validation
-- Axios for API requests
-
-### Backend
-- Node.js with Express.js
-- Sequelize ORM
-- MySQL/PostgreSQL database
-- JWT for authentication
-- Bcrypt for password hashing
-
-## Project Structure
-
-```
-├── backend/               # Node.js & Express backend
-│   ├── config/            # Configuration files
-│   ├── controllers/       # Route controllers
-│   ├── middlewares/       # Custom middlewares
-│   ├── models/            # Sequelize models
-│   ├── routes/            # API routes
-│   └── utils/             # Utility functions
-│
-├── frontend/              # React.js frontend
-│   ├── public/            # Static files
-│   └── src/               # Source files
-│       ├── app/           # Redux store
-│       ├── components/    # UI components
-│       ├── features/      # Redux slices
-│       └── pages/         # Page components
-│
-└── .docs/                 # Documentation files
-    └── schema.sql         # Database schema
-```
+- **Frontend**: React, Redux Toolkit, Tailwind CSS
+- **Backend**: Node.js, Express
+- **Database**: MySQL with Sequelize ORM
+- **Authentication**: JWT (JSON Web Tokens)
+- **File Upload**: Multer
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js >= 14.x
-- npm >= 6.x
-- MySQL or PostgreSQL
+
+- Node.js (v14 or later)
+- MySQL (v5.7 or later)
+- npm or yarn
 
 ### Installation
 
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/carzone.git
-cd carzone
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/carzone.git
+   cd carzone
+   ```
 
-2. Set up backend
-```bash
-cd backend
-npm install
-cp .env.example .env  # Create and configure your .env file
-npm run dev
-```
+2. Install the dependencies:
+   ```bash
+   # Install backend dependencies
+   npm install
+   
+   # Install frontend dependencies
+   cd frontend
+   npm install
+   cd ..
+   ```
 
-3. Set up frontend
-```bash
-cd frontend
-npm install
-npm start
-```
+3. Create a `.env` file in the root directory based on the `.env.example` template.
 
-4. Create and set up the database
-```bash
-# Create database using your database client
-# Then run the schema from .docs/schema.sql
-```
+4. Create the database:
+   ```bash
+   # Connect to MySQL
+   mysql -u root -p
+   
+   # Create the database
+   CREATE DATABASE carzone;
+   
+   # Exit MySQL
+   exit
+   ```
 
-The backend server will run on http://localhost:5000 and the frontend development server on http://localhost:3000.
+5. Initialize the database schema:
+   ```bash
+   # Run the database migration
+   mysql -u root -p carzone < .docs/schema.sql
+   ```
 
-## API Documentation
+6. Start the development server:
+   ```bash
+   # Run both frontend and backend concurrently
+   npm run dev
+   
+   # Run backend only
+   npm run server
+   
+   # Run frontend only
+   npm run client
+   ```
 
-The API documentation for the backend endpoints can be found in the [backend README](./backend/README.md).
+## Development Setup
+
+### Database Sync (Development Only)
+
+To automatically sync your Sequelize models with the database during development:
+
+1. Set `SYNC_DB=true` in your `.env` file.
+
+   > **Warning**: This will modify your database schema to match your models. Use with caution in development environments.
+
+2. Start the development server: `npm run dev`
+
+### Running with Mock Data
+
+1. When the backend is not running or still in development, the frontend can use mock data by detecting 404 errors from API calls.
+
+2. This enables frontend developers to work independently from the backend team.
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login a user
+- `GET /api/auth/logout` - Logout the current user
+- `GET /api/auth/me` - Get current user profile
+
+### Users
+- `GET /api/users` - Get all users (admin only)
+- `GET /api/users/:id` - Get single user
+- `POST /api/users` - Create a new user (admin only)
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
+- `PUT /api/users/:id/role` - Update user role (admin only)
+
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get single product
+- `POST /api/products` - Create a new product
+- `PUT /api/products/:id` - Update product
+- `DELETE /api/products/:id` - Delete product
+- `POST /api/products/:id/image` - Upload product image
+
+### Categories
+- `GET /api/categories` - Get all categories
+- `GET /api/categories/:id` - Get single category
+- `POST /api/categories` - Create a new category
+- `PUT /api/categories/:id` - Update category
+- `DELETE /api/categories/:id` - Delete category
+
+### Orders
+- `GET /api/orders` - Get all orders
+- `GET /api/orders/:id` - Get single order
+- `POST /api/orders` - Create a new order
+- `PUT /api/orders/:id/status` - Update order status
+- `DELETE /api/orders/:id` - Delete order
 
 ## License
 
-MIT 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- [React](https://reactjs.org/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Express](https://expressjs.com/)
+- [Sequelize](https://sequelize.org/)
+- [JWT](https://jwt.io/) 

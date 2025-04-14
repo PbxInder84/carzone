@@ -11,8 +11,8 @@ import {
   FaTimes, 
   FaSignOutAlt,
   FaChevronLeft,
-  FaChevronDown,
-  FaChevronRight
+  FaChevronRight,
+  FaTags
 } from 'react-icons/fa';
 import { logout } from '../../features/auth/authSlice';
 
@@ -45,6 +45,12 @@ const DashboardLayout = () => {
       label: 'Products',
       icon: <FaCar />,
       path: '/dashboard/products',
+      roles: ['admin', 'seller']
+    },
+    {
+      label: 'Categories',
+      icon: <FaTags />,
+      path: '/dashboard/categories',
       roles: ['admin', 'seller']
     },
     {

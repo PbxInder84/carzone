@@ -1,9 +1,20 @@
-import apiClient from '../utils/apiClient';
+import apiClient from './apiClient';
+import axios from 'axios';
+
+// Get all categories
+export const getAllCategories = async () => {
+  try {
+    const response = await apiClient.get('/categories');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 // Get all products
 export const getAllProducts = async (page = 1, limit = 10, filters = {}) => {
   try {
-    let url = `/api/products?page=${page}&limit=${limit}`;
+    let url = `/products?page=${page}&limit=${limit}`;
     
     // Add filters if any
     if (filters.category) url += `&category=${filters.category}`;
@@ -21,7 +32,7 @@ export const getAllProducts = async (page = 1, limit = 10, filters = {}) => {
 // Get product by ID
 export const getProductById = async (productId) => {
   try {
-    const response = await apiClient.get(`/api/products/${productId}`);
+    const response = await apiClient.get(`/products/${productId}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -29,21 +40,55 @@ export const getProductById = async (productId) => {
 };
 
 // Create product
-export const createProduct = async (productData) => {
+export const createProduct = async (formData) => {
   try {
-    const response = await apiClient.post('/api/products', productData);
+    const token = localStorage.getItem('token');
+    
+    // Log the form data contents for debugging
+    console.log('FormData being sent:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value} (type: ${typeof value}, instanceof Array: ${Array.isArray(value)})`);
+    }
+    
+    const response = await axios.post('/api/products', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
+    console.error('Error creating product:', error);
+    if (error.response && error.response.data) {
+      console.error('Server response:', error.response.data);
+    }
     throw error;
   }
 };
 
 // Update product
-export const updateProduct = async (productId, productData) => {
+export const updateProduct = async (id, formData) => {
   try {
-    const response = await apiClient.put(`/api/products/${productId}`, productData);
+    const token = localStorage.getItem('token');
+    
+    // Log the form data contents for debugging
+    console.log('FormData being sent for update:');
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+    
+    const response = await axios.put(`/api/products/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
+    console.error('Error updating product:', error);
+    if (error.response && error.response.data) {
+      console.error('Server response:', error.response.data);
+    }
     throw error;
   }
 };
@@ -51,7 +96,7 @@ export const updateProduct = async (productId, productData) => {
 // Delete product
 export const deleteProduct = async (productId) => {
   try {
-    const response = await apiClient.delete(`/api/products/${productId}`);
+    const response = await apiClient.delete(`/products/${productId}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -59,19 +104,20 @@ export const deleteProduct = async (productId) => {
 };
 
 // Upload product image
-export const uploadProductImage = async (productId, imageFile) => {
+export const uploadProductImage = async (productId, formData) => {
   try {
-    const formData = new FormData();
-    formData.append('image', imageFile);
+    // Make sure formData contains the product_image field
+    // The key 'product_image' should match what the backend expects
+    console.log('Uploading image for product ID:', productId);
     
-    const response = await apiClient.post(`/api/products/${productId}/upload`, formData, {
+    const response = await apiClient.post(`/products/${productId}/image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
-    
     return response.data;
   } catch (error) {
+    console.error('Error in uploadProductImage:', error);
     throw error;
   }
 };
@@ -79,40 +125,9 @@ export const uploadProductImage = async (productId, imageFile) => {
 // Get product categories
 export const getProductCategories = async () => {
   try {
-    const response = await apiClient.get('/api/products/categories');
+    const response = await apiClient.get('/categories');
     return response.data;
   } catch (error) {
     throw error;
   }
-};
-
-// Mock data for development
-export const getMockProducts = (page = 1, limit = 10) => {
-  const products = [
-    { id: 1, name: 'Tesla Model S', price: 89990, category: 'Electric', stock: 15, status: 'active' },
-    { id: 2, name: 'BMW X5', price: 62500, category: 'SUV', stock: 8, status: 'active' },
-    { id: 3, name: 'Toyota Camry', price: 25500, category: 'Sedan', stock: 25, status: 'active' },
-    { id: 4, name: 'Honda Civic', price: 22000, category: 'Sedan', stock: 18, status: 'active' },
-    { id: 5, name: 'Ford F-150', price: 32000, category: 'Truck', stock: 12, status: 'active' },
-    { id: 6, name: 'Mercedes-Benz E-Class', price: 54950, category: 'Luxury', stock: 7, status: 'active' },
-    { id: 7, name: 'Audi A4', price: 39900, category: 'Luxury', stock: 9, status: 'active' },
-    { id: 8, name: 'Chevrolet Silverado', price: 33000, category: 'Truck', stock: 14, status: 'active' },
-    { id: 9, name: 'Jeep Wrangler', price: 28900, category: 'SUV', stock: 6, status: 'active' },
-    { id: 10, name: 'Nissan Altima', price: 24550, category: 'Sedan', stock: 22, status: 'active' },
-    { id: 11, name: 'Lexus RX', price: 45950, category: 'Luxury SUV', stock: 11, status: 'active' },
-    { id: 12, name: 'Subaru Outback', price: 26950, category: 'Crossover', stock: 17, status: 'active' },
-  ];
-  
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  
-  return {
-    data: products.slice(start, end),
-    pagination: {
-      total: products.length,
-      page,
-      limit,
-      pages: Math.ceil(products.length / limit)
-    }
-  };
 }; 

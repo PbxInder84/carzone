@@ -31,6 +31,19 @@ const Order = sequelize.define(
       defaultValue: 'pending',
       allowNull: false,
     },
+    payment_method: {
+      type: DataTypes.ENUM('cod', 'upi', 'net_banking'),
+      defaultValue: 'cod',
+      allowNull: false,
+    },
+    payment_details: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    payment_date: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

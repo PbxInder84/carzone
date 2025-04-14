@@ -1,70 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaSave, FaTrash, FaUpload, FaImage } from 'react-icons/fa';
+import { FaSave, FaTrash, FaImage } from 'react-icons/fa';
 import * as productService from '../../../db/productService';
-import * as categoryService from '../../../db/categoryService';
+import { getCategories } from '../../../features/categories/categorySlice';
 import Spinner from '../../../components/common/Spinner';
 
 const ProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { categories, isLoading: categoriesLoading } = useSelector((state) => state.categories);
   const isEditMode = !!id;
   
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
-    sale_price: '',
     category: '',
-    stock_quantity: '',
-    is_featured: false,
-    status: 'active'
+    category_id: '',
+    stock_quantity: '0',
+    image_url: '',
+    seller_id: useSelector((state) => state.auth.user?.id)
   });
   
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
-  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [useImageUrl, setUseImageUrl] = useState(false);
   
   useEffect(() => {
-    const fetchData = async () => {
+    // Fetch categories
+    dispatch(getCategories());
+  }, [dispatch]);
+  
+  useEffect(() => {
+    const fetchProductData = async () => {
+      if (!isEditMode) return;
+      
       setIsLoading(true);
       try {
-        // Fetch categories
-        const categoriesResponse = await categoryService.getMockCategories();
-        setCategories(categoriesResponse.data);
+        const productResponse = await productService.getProductById(id);
+        const product = productResponse.data;
         
-        // If in edit mode, fetch product data
-        if (isEditMode) {
-          const productResponse = await productService.getProductById(id);
-          const product = productResponse.data;
-          
-          setFormData({
-            name: product.name || '',
-            description: product.description || '',
-            price: product.price || '',
-            sale_price: product.sale_price || '',
-            category: product.category || '',
-            stock_quantity: product.stock_quantity || '',
-            is_featured: product.is_featured || false,
-            status: product.status || 'active'
-          });
-          
-          if (product.image) {
-            setImagePreview(product.image);
-          }
+        setFormData({
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || '',
+          category: product.category || '',
+          category_id: product.category_id || '',
+          stock_quantity: product.stock_quantity || '',
+          image_url: product.image_url || '',
+          seller_id: product.seller_id || ''
+        });
+        
+        if (product.image_url) {
+          setImagePreview(product.image_url);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error('Failed to load data');
+        console.error('Error fetching product data:', error);
+        toast.error('Failed to load product data');
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchData();
+    fetchProductData();
   }, [id, isEditMode]);
   
   const handleChange = (e) => {
@@ -73,6 +76,11 @@ const ProductForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+
+    // Update image preview if image_url changes
+    if (name === 'image_url' && value && useImageUrl) {
+      setImagePreview(value);
+    }
   };
   
   const handleImageChange = (e) => {
@@ -81,6 +89,23 @@ const ProductForm = () => {
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
+      // Clear image URL when file is selected
+      setFormData(prev => ({ ...prev, image_url: '' }));
+      setUseImageUrl(false);
+    }
+  };
+
+  const toggleImageInputMethod = () => {
+    setUseImageUrl(!useImageUrl);
+    // Clear the opposite input type
+    if (!useImageUrl) {
+      setImageFile(null);
+      // Keep the image preview if there's a URL
+    } else {
+      setFormData(prev => ({ ...prev, image_url: '' }));
+      if (!imageFile) {
+        setImagePreview('');
+      }
     }
   };
   
@@ -90,34 +115,93 @@ const ProductForm = () => {
     
     try {
       // Validate form
-      if (!formData.name || !formData.price || !formData.category) {
-        toast.error('Please fill in all required fields');
+      if (!formData.name || formData.name.trim() === '') {
+        toast.error('Product name is required');
         setIsSaving(false);
         return;
       }
       
-      // Convert form data types
-      const productData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        sale_price: formData.sale_price ? parseFloat(formData.sale_price) : null,
-        stock_quantity: parseInt(formData.stock_quantity, 10)
-      };
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        toast.error('Price must be greater than 0');
+        setIsSaving(false);
+        return;
+      }
+
+      if (!formData.seller_id) {
+        toast.error('You must be logged in as a seller to create products');
+        setIsSaving(false);
+        return;
+      }
+
+      if (!formData.category_id) {
+        toast.error('Category is required');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Find selected category to get its name
+      const selectedCategory = categories.find(
+        cat => cat.id === parseInt(formData.category_id, 10)
+      );
+      
+      if (!selectedCategory) {
+        toast.error('Invalid category selected');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Create FormData object
+      const formDataToSend = new FormData();
+      
+      // Add required fields
+      formDataToSend.append('name', formData.name.trim());
+      formDataToSend.append('price', parseFloat(formData.price).toFixed(2));
+      formDataToSend.append('seller_id', formData.seller_id);
+      
+      // Add category as a string, not an array
+      formDataToSend.append('category', selectedCategory.name);
+      formDataToSend.append('category_id', formData.category_id.toString());
+      formDataToSend.append('stock_quantity', parseInt(formData.stock_quantity || '0', 10).toString());
+      
+      // Add optional fields if they exist
+      if (formData.description) {
+        formDataToSend.append('description', formData.description);
+      }
+      
+      // Handle image (either file or URL)
+      if (imageFile) {
+        formDataToSend.append('product_image', imageFile);
+      } else if (formData.image_url && formData.image_url.trim() !== '') {
+        formDataToSend.append('image_url', formData.image_url.trim());
+      }
+      
+      // Log the data being sent (for debugging)
+      console.log('Submitting product data:', {
+        name: formData.name.trim(),
+        price: parseFloat(formData.price).toFixed(2),
+        seller_id: formData.seller_id,
+        description: formData.description || null,
+        category: selectedCategory.name,
+        category_id: formData.category_id.toString(),
+        stock_quantity: parseInt(formData.stock_quantity || '0', 10).toString(),
+        hasImage: !!imageFile,
+        image_url: formData.image_url || null
+      });
+
+      // Log the FormData to ensure category is formatted correctly
+      console.log('FormData details:');
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}: ${value} (type: ${typeof value})`);
+      }
       
       let response;
       
-      // Create or update product
       if (isEditMode) {
-        response = await productService.updateProduct(id, productData);
+        response = await productService.updateProduct(id, formDataToSend);
         toast.success('Product updated successfully');
       } else {
-        response = await productService.createProduct(productData);
+        response = await productService.createProduct(formDataToSend);
         toast.success('Product created successfully');
-      }
-      
-      // Upload image if selected
-      if (imageFile && response.data && response.data.id) {
-        await productService.uploadProductImage(response.data.id, imageFile);
       }
       
       // Redirect back to products list
@@ -125,13 +209,19 @@ const ProductForm = () => {
       
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      if (error.response && error.response.data && error.response.data.error) {
+        toast.error(`Failed to save product: ${error.response.data.error}`);
+      } else if (error.message) {
+        toast.error(`Failed to save product: ${error.message}`);
+      } else {
+        toast.error('Failed to save product. Please check all required fields.');
+      }
     } finally {
       setIsSaving(false);
     }
   };
   
-  if (isLoading) {
+  if (isLoading || categoriesLoading) {
     return <Spinner />;
   }
   
@@ -162,6 +252,7 @@ const ProductForm = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
+                    maxLength={255}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     required
                   />
@@ -202,38 +293,17 @@ const ProductForm = () => {
                       name="price"
                       value={formData.price}
                       onChange={handleChange}
-                      min="0"
                       step="0.01"
-                      className="block w-full pl-7 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      min="0.01"
+                      className="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                       required
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label htmlFor="sale_price" className="block text-sm font-medium text-gray-700 mb-1">
-                    Sale Price
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      id="sale_price"
-                      name="sale_price"
-                      value={formData.sale_price}
-                      onChange={handleChange}
-                      min="0"
-                      step="0.01"
-                      className="block w-full pl-7 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    />
-                  </div>
-                </div>
-                
-                <div>
                   <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                    Stock Quantity
+                    Stock Quantity <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -243,23 +313,24 @@ const ProductForm = () => {
                     onChange={handleChange}
                     min="0"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    required
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
                     Category <span className="text-red-500">*</span>
                   </label>
                   <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
+                    id="category_id"
+                    name="category_id"
+                    value={formData.category_id}
                     onChange={handleChange}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     required
                   >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
+                    <option value="">Select a category</option>
+                    {categories && categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
@@ -273,121 +344,113 @@ const ProductForm = () => {
           {/* Sidebar - Right */}
           <div className="space-y-6">
             {/* Product Image */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div>
               <h2 className="text-lg font-medium mb-4">Product Image</h2>
               
-              <div className="text-center">
-                {imagePreview ? (
-                  <div className="mb-4">
-                    <img
-                      src={imagePreview}
-                      alt="Product Preview"
-                      className="h-48 w-auto mx-auto object-contain border rounded"
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Image Source</span>
+                  <button
+                    type="button"
+                    onClick={toggleImageInputMethod}
+                    className="text-sm text-primary-600 hover:text-primary-800"
+                  >
+                    {useImageUrl ? 'Upload Image File Instead' : 'Use Image URL Instead'}
+                  </button>
+                </div>
+                
+                {useImageUrl ? (
+                  <div>
+                    <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">
+                      Image URL
+                    </label>
+                    <input
+                      type="url"
+                      id="image_url"
+                      name="image_url"
+                      value={formData.image_url}
+                      onChange={handleChange}
+                      placeholder="https://example.com/image.jpg"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                     />
                   </div>
                 ) : (
-                  <div className="h-48 w-full flex items-center justify-center bg-gray-200 rounded mb-4">
-                    <FaImage className="text-gray-400 text-4xl" />
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Product preview"
+                          className="mx-auto h-48 w-auto object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview('');
+                            setImageFile(null);
+                          }}
+                          className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+                        >
+                          <FaTrash className="text-red-500" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="mx-auto h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center">
+                          <FaImage className="h-12 w-12 text-gray-400" />
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <label htmlFor="image-upload" className="cursor-pointer text-primary-600 hover:text-primary-800">
+                            <span>Upload an image</span>
+                            <input
+                              id="image-upload"
+                              name="image"
+                              type="file"
+                              className="sr-only"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                            />
+                          </label>
+                          <p>or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 2MB</p>
+                      </div>
+                    )}
                   </div>
                 )}
-                
-                <div>
-                  <label htmlFor="image" className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                    <FaUpload className="mr-2 -ml-1 text-gray-500" />
-                    {imagePreview ? 'Change Image' : 'Upload Image'}
-                  </label>
-                  <input
-                    type="file"
-                    id="image"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="sr-only"
-                  />
-                </div>
               </div>
             </div>
             
-            {/* Status & Visibility */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h2 className="text-lg font-medium mb-4">Status & Visibility</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  >
-                    <option value="active">Active</option>
-                    <option value="draft">Draft</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                  </select>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="is_featured"
-                    name="is_featured"
-                    checked={formData.is_featured}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-700">
-                    Featured Product
-                  </label>
-                </div>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <div className="flex flex-col space-y-3">
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <FaSave className="mr-2 -ml-1" />
-                  {isSaving ? 'Saving...' : 'Save Product'}
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard/products')}
-                  className="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  Cancel
-                </button>
-                
-                {isEditMode && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm('Are you sure you want to delete this product?')) {
-                        productService.deleteProduct(id)
-                          .then(() => {
-                            toast.success('Product deleted successfully');
-                            navigate('/dashboard/products');
-                          })
-                          .catch(error => {
-                            console.error('Error deleting product:', error);
-                            toast.error('Failed to delete product');
-                          });
-                      }
-                    }}
-                    className="inline-flex justify-center items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    <FaTrash className="mr-2 -ml-1" />
-                    Delete Product
-                  </button>
+            {/* Actions */}
+            <div className="space-y-3 pt-6">
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <FaSave className="mr-2" />
+                    {isEditMode ? 'Update Product' : 'Create Product'}
+                  </>
                 )}
-              </div>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard/products')}
+                className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>

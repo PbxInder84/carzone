@@ -15,20 +15,13 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filter, searchTerm]);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      // Use getMockOrders for development until API is ready
-      const response = orderService.getMockOrders(currentPage, pageSize);
       
-      setOrders(response.data);
-      setTotalPages(response.pagination.pages);
-      setLoading(false);
-
-      // When API is ready, uncomment the following code:
-      /*
       const response = await orderService.getAllOrders(currentPage, pageSize, {
         search: searchTerm,
         status: filter !== 'all' ? filter : undefined,
@@ -36,8 +29,8 @@ const Orders = () => {
       });
       
       setOrders(response.data);
-      setTotalPages(response.pagination.pages);
-      */
+      setTotalPages(response.pagination.total_pages);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setLoading(false);
@@ -71,7 +64,7 @@ const Orders = () => {
       await orderService.updateOrderStatus(orderId, newStatus);
       setOrders(
         orders.map((order) => 
-          order.id === orderId ? { ...order, status: newStatus } : order
+          order.id === orderId ? { ...order, order_status: newStatus } : order
         )
       );
     } catch (error) {
@@ -88,8 +81,6 @@ const Orders = () => {
       case 'shipped':
         return 'bg-purple-100 text-purple-800';
       case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
         return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
@@ -209,7 +200,7 @@ const Orders = () => {
                     <tr key={order.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {order.id.substring(0, 8)}...
+                          {String(order.id)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -222,21 +213,21 @@ const Orders = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {formatDate(order.createdAt)}
+                          {order.created_at ? formatDate(order.created_at) : 'Invalid Date'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(order.total)}
+                          {order.total_amount ? formatCurrency(order.total_amount) : '$NaN'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
-                            order.status
+                            order.order_status
                           )}`}
                         >
-                          {order.status}
+                          {order.order_status || '-'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -246,7 +237,7 @@ const Orders = () => {
                         >
                           <FaEye className="inline" />
                         </Link>
-                        {order.status === 'pending' && (
+                        {order.order_status === 'pending' && (
                           <button
                             onClick={() =>
                               updateOrderStatus(order.id, 'processing')

@@ -9,17 +9,18 @@ const {
 const { getProductReviews, createReview } = require('../controllers/reviews');
 const { protect, authorize } = require('../middlewares/auth');
 const { validate, productSchema } = require('../middlewares/validator');
+const { uploadProductImage } = require('../middlewares/upload/fileUpload');
 
 const router = express.Router();
 
 // Product routes
 router.route('/')
   .get(getProducts)
-  .post(protect, authorize('seller', 'admin'), validate(productSchema), createProduct);
+  .post(protect, authorize('seller', 'admin'), uploadProductImage, createProduct);
 
 router.route('/:id')
   .get(getProduct)
-  .put(protect, authorize('seller', 'admin'), updateProduct)
+  .put(protect, authorize('seller', 'admin'), uploadProductImage, updateProduct)
   .delete(protect, authorize('seller', 'admin'), deleteProduct);
 
 // Review routes for products

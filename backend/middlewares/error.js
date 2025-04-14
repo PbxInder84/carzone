@@ -1,11 +1,15 @@
 const ErrorResponse = require('../utils/errorResponse');
+const logger = require('../utils/logger');
 
 const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log to console for dev
-  console.error(err.stack);
+  // Log to Winston logger
+  logger.error(`${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`, { 
+    stack: err.stack,
+    error: err
+  });
 
   // Sequelize validation error
   if (err.name === 'SequelizeValidationError') {

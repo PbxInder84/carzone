@@ -69,10 +69,13 @@ export const createProduct = createAsyncThunk(
     try {
       const token = thunkAPI.getState().auth.user.token;
       
+      // Check if productData is FormData or regular object
+      const isFormData = productData instanceof FormData;
+      
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': isFormData ? 'multipart/form-data' : 'application/json'
         },
       };
       

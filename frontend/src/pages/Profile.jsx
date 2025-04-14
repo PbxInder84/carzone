@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../features/auth/authSlice';
 import Spinner from '../components/layout/Spinner';
 import { FaUser, FaEnvelope, FaUserTag, FaIdCard } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user, isLoading } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -14,6 +17,28 @@ const Profile = () => {
       dispatch(getCurrentUser());
     }
   }, [dispatch, user]);
+
+  const handleEditProfile = () => {
+    navigate('/profile/edit');
+  };
+
+  const handleChangePassword = () => {
+    navigate('/profile/change-password');
+  };
+
+  const handleManageProducts = () => {
+    if (user?.data?.role === 'seller') {
+      navigate('/seller/products');
+    } else if (user?.data?.role === 'admin') {
+      navigate('/admin/products');
+    } else {
+      toast.error('You do not have permission to access this page');
+    }
+  };
+
+  const handleAdminDashboard = () => {
+    navigate('/admin/dashboard');
+  };
 
   if (isLoading || !user) {
     return <Spinner />;
@@ -80,22 +105,34 @@ const Profile = () => {
               <h2 className="text-xl font-semibold mb-4">Account Actions</h2>
               
               <div className="space-y-4">
-                <button className="btn-primary w-full">
+                <button 
+                  className="btn-primary w-full"
+                  onClick={handleEditProfile}
+                >
                   Edit Profile
                 </button>
                 
-                <button className="btn-outline w-full">
+                <button 
+                  className="btn-outline w-full"
+                  onClick={handleChangePassword}
+                >
                   Change Password
                 </button>
                 
                 {userData.role === 'seller' && (
-                  <button className="btn-secondary w-full">
+                  <button 
+                    className="btn-secondary w-full"
+                    onClick={handleManageProducts}
+                  >
                     Manage Products
                   </button>
                 )}
                 
                 {userData.role === 'admin' && (
-                  <button className="btn-secondary w-full">
+                  <button 
+                    className="btn-secondary w-full"
+                    onClick={handleAdminDashboard}
+                  >
                     Admin Dashboard
                   </button>
                 )}

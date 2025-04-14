@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
 const Product = sequelize.define(
-  'Product',
+  'products',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -12,6 +12,11 @@ const Product = sequelize.define(
     seller_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      },
+      onDelete: 'CASCADE'
     },
     name: {
       type: DataTypes.STRING(255),
@@ -29,10 +34,6 @@ const Product = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
     stock_quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -42,11 +43,31 @@ const Product = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    category_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'product_categories',
+        key: 'id'
+      },
+      onDelete: 'SET NULL'
+    }
   },
   {
+    tableName: 'products',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    indexes: [
+      {
+        name: 'idx_products_seller_id',
+        fields: ['seller_id']
+      },
+      {
+        name: 'idx_products_category',
+        fields: ['category']
+      }
+    ]
   }
 );
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaShoppingCart, FaUserAlt, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaSearch, FaBars, FaTimes, FaCar } from 'react-icons/fa';
 import { logout } from '../../features/auth/authSlice';
+import CartIcon from './CartIcon';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -144,14 +145,7 @@ const Header = () => {
           
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/cart" className="hover:text-secondary-400 transition duration-300 relative">
-              <FaShoppingCart className="text-xl" />
-              {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-secondary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems.length}
-                </span>
-              )}
-            </Link>
+            {user && <CartIcon />}
             
             {user ? (
               <div className="relative">
@@ -274,74 +268,78 @@ const Header = () => {
               </Link>
             </nav>
             
+            {/* Mobile Menu Links */}
             <div className="flex flex-col space-y-3 pt-3">
-              <Link 
-                to="/cart" 
-                className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaShoppingCart />
-                <span>Cart {cartItems.length > 0 && `(${cartItems.length})`}</span>
-              </Link>
+              <div className="flex items-center justify-between border-b border-primary-700 pb-3">
+                {user ? (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <FaUserAlt />
+                      <span>{user.data?.name || 'User'}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      {user && <CartIcon />}
+                      <button onClick={onLogout} className="flex items-center space-x-1 text-red-400">
+                        <FaSignOutAlt />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex space-x-4 w-full">
+                    <Link 
+                      to="/login" 
+                      className="flex items-center justify-center space-x-1 bg-primary-700 hover:bg-primary-600 w-1/2 py-2 rounded transition duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <FaSignInAlt />
+                      <span>Login</span>
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      className="flex items-center justify-center space-x-1 bg-secondary-600 hover:bg-secondary-500 w-1/2 py-2 rounded transition duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <FaUserPlus />
+                      <span>Register</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
               
-              {user ? (
-                <>
+              {user && (
+                <div className="space-y-3 border-b border-primary-700 pb-3">
                   <Link 
                     to="/profile" 
-                    className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
+                    className="block hover:text-secondary-400"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <FaUserAlt />
-                    <span>My Profile</span>
+                    My Profile
                   </Link>
                   <Link 
                     to="/orders" 
-                    className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
+                    className="block hover:text-secondary-400"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    <FaUserAlt />
-                    <span>My Orders</span>
+                    My Orders
+                  </Link>
+                  <Link 
+                    to="/cart" 
+                    className="block hover:text-secondary-400"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    My Cart
                   </Link>
                   {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
-                    <Link 
-                      to="/dashboard" 
-                      className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
+                    <Link
+                      to="/dashboard"
+                      className="block hover:text-secondary-400"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <FaUserAlt />
-                      <span>Dashboard</span>
+                      Dashboard
                     </Link>
                   ) : null}
-                  <button 
-                    onClick={() => {
-                      onLogout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2 text-left"
-                  >
-                    <FaSignOutAlt />
-                    <span>Logout</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link 
-                    to="/login" 
-                    className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FaSignInAlt />
-                    <span>Login</span>
-                  </Link>
-                  <Link 
-                    to="/register" 
-                    className="hover:text-secondary-400 transition duration-300 flex items-center space-x-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FaUserPlus />
-                    <span>Register</span>
-                  </Link>
-                </>
+                </div>
               )}
             </div>
           </div>

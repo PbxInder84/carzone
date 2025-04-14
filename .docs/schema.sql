@@ -1,90 +1,105 @@
--- CareZone Car Accessories E-commerce Website Database Schema
+CREATE DATABASE carzone_db;
+
+USE carzone_db;
 
 -- Users Table
-CREATE TABLE Users (
+CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
+    NAME VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'seller', 'user') NOT NULL DEFAULT 'user',
+    PASSWORD VARCHAR(255) NOT NULL,
+    ROLE ENUM('admin', 'seller', 'user') NOT NULL DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Product Categories Table
+CREATE TABLE product_categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    NAME VARCHAR(100) NOT NULL,
+    DESCRIPTION TEXT,
+    image_url VARCHAR(255),
+    icon VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Products Table
-CREATE TABLE Products (
+CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
     seller_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price DECIMAL(10, 2) NOT NULL,
+    NAME VARCHAR(255) NOT NULL,
+    DESCRIPTION TEXT,
+    price DECIMAL(10,2) NOT NULL,
     category VARCHAR(100) NOT NULL,
     stock_quantity INT NOT NULL DEFAULT 0,
     image_url VARCHAR(255),
+    category_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (seller_id) REFERENCES Users(id) ON DELETE CASCADE
+    FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL
 );
 
 -- Orders Table
-CREATE TABLE Orders (
+CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
     order_status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
     shipping_address TEXT NOT NULL,
     payment_status ENUM('pending', 'completed', 'failed') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Order_Items Table
-CREATE TABLE Order_Items (
+-- Order Items Table
+CREATE TABLE order_items (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
     seller_id INT NOT NULL,
     quantity INT NOT NULL,
-    price_at_time_of_order DECIMAL(10, 2) NOT NULL,
+    price_at_time_of_order DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
-    FOREIGN KEY (seller_id) REFERENCES Users(id) ON DELETE CASCADE
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Reviews Table
-CREATE TABLE Reviews (
+CREATE TABLE reviews (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     review_text TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
 -- Cart Table
-CREATE TABLE Cart (
+CREATE TABLE cart (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     UNIQUE KEY (user_id, product_id)
 );
 
 -- Coupons Table
-CREATE TABLE Coupons (
+CREATE TABLE coupons (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    code VARCHAR(50) UNIQUE NOT NULL,
-    discount_percentage DECIMAL(5, 2),
-    discount_amount DECIMAL(10, 2),
-    minimum_purchase DECIMAL(10, 2) DEFAULT 0,
+    CODE VARCHAR(50) UNIQUE NOT NULL,
+    discount_percentage DECIMAL(5,2),
+    discount_amount DECIMAL(10,2),
+    minimum_purchase DECIMAL(10,2) DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     start_date DATE,
     end_date DATE,
@@ -92,36 +107,23 @@ CREATE TABLE Coupons (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Order_Coupons Table
-CREATE TABLE Order_Coupons (
+-- Order Coupons Table
+CREATE TABLE order_coupons (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
     coupon_id INT NOT NULL,
-    discount_applied DECIMAL(10, 2) NOT NULL,
+    discount_applied DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (coupon_id) REFERENCES Coupons(id) ON DELETE CASCADE
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
 );
 
--- Product_Categories Table
-CREATE TABLE Product_Categories (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Add category_id to Products table (alter existing table)
-ALTER TABLE Products ADD COLUMN category_id INT;
-ALTER TABLE Products ADD CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES Product_Categories(id);
-
--- Index Creation for performance
-CREATE INDEX idx_products_seller ON Products(seller_id);
-CREATE INDEX idx_products_category ON Products(category);
-CREATE INDEX idx_orders_user ON Orders(user_id);
-CREATE INDEX idx_order_items_order ON Order_Items(order_id);
-CREATE INDEX idx_order_items_product ON Order_Items(product_id);
-CREATE INDEX idx_order_items_seller ON Order_Items(seller_id);
-CREATE INDEX idx_reviews_product ON Reviews(product_id);
-CREATE INDEX idx_cart_user ON Cart(user_id); 
+-- Indexes for Performance
+CREATE INDEX idx_products_seller_id ON products(seller_id);
+CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX idx_order_items_seller_id ON order_items(seller_id);
+CREATE INDEX idx_reviews_product_id ON reviews(product_id);
+CREATE INDEX idx_cart_user_id ON cart(user_id);

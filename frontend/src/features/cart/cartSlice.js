@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import apiClient from '../../utils/apiClient';
+import apiClient from '../../db/apiClient';
 
 const initialState = {
   cartItems: [],
@@ -15,7 +15,7 @@ export const getCartItems = createAsyncThunk(
   'cart/getItems',
   async (_, thunkAPI) => {
     try {
-      const response = await apiClient.get('/api/cart');
+      const response = await apiClient.get('/cart');
       return response.data;
     } catch (error) {
       const message = 
@@ -35,7 +35,7 @@ export const addToCart = createAsyncThunk(
   'cart/addItem',
   async (cartData, thunkAPI) => {
     try {
-      const response = await apiClient.post('/api/cart', cartData);
+      const response = await apiClient.post('/cart', cartData);
       return response.data;
     } catch (error) {
       const message = 
@@ -55,7 +55,7 @@ export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
   async (cartData, thunkAPI) => {
     try {
-      const response = await apiClient.put(`/api/cart/${cartData.id}`, { 
+      const response = await apiClient.put(`/cart/${cartData.id}`, { 
         quantity: cartData.quantity 
       });
       
@@ -78,7 +78,7 @@ export const removeFromCart = createAsyncThunk(
   'cart/removeItem',
   async (id, thunkAPI) => {
     try {
-      await apiClient.delete(`/api/cart/${id}`);
+      await apiClient.delete(`/cart/${id}`);
       return id;
     } catch (error) {
       const message = 
@@ -98,7 +98,7 @@ export const clearCart = createAsyncThunk(
   'cart/clearCart',
   async (_, thunkAPI) => {
     try {
-      await apiClient.delete('/api/cart');
+      await apiClient.delete('/cart');
       return;
     } catch (error) {
       const message = 

@@ -74,8 +74,6 @@ const Orders = () => {
         return 'bg-purple-100 text-purple-800';
       case 'delivered':
         return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -137,14 +135,14 @@ const Orders = () => {
               Processing
             </button>
             <button
-              onClick={() => setFilter('completed')}
+              onClick={() => setFilter('delivered')}
               className={`px-3 py-2 rounded-lg ${
-                filter === 'completed'
+                filter === 'delivered'
                   ? 'bg-green-200 text-green-800'
                   : 'bg-white text-gray-600 border'
               }`}
             >
-              Completed
+              Delivered
             </button>
           </div>
         </div>
@@ -179,26 +177,26 @@ const Orders = () => {
                     <tr key={order.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {order.id.substring(0, 8)}...
+                          {String(order.id)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {formatDate(order.createdAt)}
+                          {order.created_at ? formatDate(order.created_at) : 'Invalid Date'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(order.total)}
+                          {order.total_amount ? formatCurrency(order.total_amount) : '$NaN'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(
-                            order.status
+                            order.order_status
                           )}`}
                         >
-                          {order.status}
+                          {order.order_status || '-'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

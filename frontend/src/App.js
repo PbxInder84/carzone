@@ -8,7 +8,13 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import EditProfile from './pages/Profile/EditProfile';
+import ChangePassword from './pages/Profile/ChangePassword';
 import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import ProtectedRoute from './components/routing/ProtectedRoute';
@@ -18,9 +24,27 @@ import AdminProducts from './pages/Admin/Products';
 import AdminOrders from './pages/Admin/Orders';
 import AdminUsers from './pages/Admin/Users';
 import AdminSettings from './pages/Admin/Settings';
-import CategoryList from './pages/Admin/Products/CategoryList';
-import CreateCategory from './pages/Admin/Products/CreateCategory';
+import AdminCategories from './pages/Admin/Categories';
 import ProductForm from './pages/Admin/Products/ProductForm';
+import OrderDetail from './pages/Admin/OrderDetail';
+import UserOrderDetail from './pages/Profile/OrderDetail';
+
+// Add this component somewhere after the other imports at the top
+const Debug = () => {
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+  
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Debug Info</h1>
+      <div className="bg-gray-100 p-4 rounded">
+        <h2 className="text-lg font-semibold mb-2">User Data in localStorage:</h2>
+        <pre className="bg-white p-2 rounded border border-gray-300 overflow-x-auto">
+          {JSON.stringify(user, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+};
 
 // Layout component with header and footer
 const Layout = () => {
@@ -49,14 +73,22 @@ const router = createBrowserRouter(
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/debug" element={<Debug />} />
         
         {/* Protected Routes - Any user */}
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
-          <Route path="/orders" element={<Home />} />
-          <Route path="/cart" element={<Home />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
+          <Route path="/profile/change-password" element={<ChangePassword />} />
+          <Route path="/orders" element={<AdminOrders />} />
+          <Route path="/account/orders/:id" element={<UserOrderDetail />} />
+          <Route path="/orders/:id" element={<UserOrderDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
         </Route>
       </Route>
       
@@ -67,14 +99,13 @@ const router = createBrowserRouter(
           <Route path="products" element={<AdminProducts />} />
           <Route path="products/new" element={<ProductForm />} />
           <Route path="products/edit/:id" element={<ProductForm />} />
+          <Route path="categories" element={<AdminCategories />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
           
           {/* Admin Only Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="users" element={<AdminUsers />} />
-            <Route path="categories" element={<CategoryList />} />
-            <Route path="categories/create" element={<CreateCategory />} />
-            <Route path="categories/edit/:id" element={<CreateCategory />} />
           </Route>
           
           <Route path="settings" element={<AdminSettings />} />
@@ -82,9 +113,22 @@ const router = createBrowserRouter(
       </Route>
       
       {/* Redirect legacy /admin/* routes to /dashboard/* for backward compatibility */}
-      <Route path="/admin/*" element={
-        <ProtectedRoute allowedRoles={['admin', 'seller']}>
-          <Navigate to="/dashboard/*" replace />
+      <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/admin/orders" element={<Navigate to="/dashboard/orders" replace />} />
+      <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
+      <Route path="/admin/categories" element={<Navigate to="/dashboard/categories" replace />} />
+      <Route path="/admin/users" element={<Navigate to="/dashboard/users" replace />} />
+      <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
+      
+      {/* Direct access routes for admin orders */}
+      <Route element={<ProtectedRoute allowedRoles={['admin', 'seller']} />}>
+        <Route path="/admin/orders/:id" element={<OrderDetail />} />
+      </Route>
+      
+      {/* Redirect /seller/* routes to appropriate dashboard sections */}
+      <Route path="/seller/products" element={
+        <ProtectedRoute allowedRoles={['seller']}>
+          <Navigate to="/dashboard/products" replace />
         </ProtectedRoute>
       } />
     </Route>

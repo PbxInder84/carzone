@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { getProducts } from '../features/products/productSlice';
+import { getCategories } from '../features/categories/categorySlice';
 import ProductCard from '../components/products/ProductCard';
 import Spinner from '../components/layout/Spinner';
 import { FaFilter, FaSearch, FaSortAmountDown, FaSortAmountUpAlt, FaTimes } from 'react-icons/fa';
@@ -10,6 +11,7 @@ const Products = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { products, isLoading } = useSelector((state) => state.products);
+  const { categories } = useSelector((state) => state.categories);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -17,14 +19,6 @@ const Products = () => {
   const [sortDirection, setSortDirection] = useState('DESC');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showFilters, setShowFilters] = useState(false);
-  
-  const categories = [
-    { id: 'interior', name: 'Interior Accessories' },
-    { id: 'exterior', name: 'Exterior Accessories' },
-    { id: 'electronics', name: 'Electronics' },
-    { id: 'performance', name: 'Performance Parts' },
-    { id: 'tools', name: 'Tools & Equipment' }
-  ];
   
   // Parse query params on initial load
   useEffect(() => {
@@ -39,7 +33,10 @@ const Products = () => {
     if (searchParam) {
       setSearchTerm(searchParam);
     }
-  }, [location.search]);
+    
+    // Fetch categories
+    dispatch(getCategories());
+  }, [location.search, dispatch]);
   
   // Fetch products when filters change
   useEffect(() => {
@@ -50,7 +47,7 @@ const Products = () => {
     };
     
     if (selectedCategory) {
-      filters.category = selectedCategory;
+      filters.category_id = selectedCategory;
     }
     
     if (searchTerm) {
@@ -73,8 +70,8 @@ const Products = () => {
     // Search is already handled by the useEffect above
   };
   
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category === selectedCategory ? '' : category);
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId === selectedCategory ? '' : categoryId);
   };
   
   const handleSortChange = (e) => {
@@ -158,8 +155,8 @@ const Products = () => {
                     <input
                       type="checkbox"
                       id={`category-${category.id}`}
-                      checked={selectedCategory === category.id}
-                      onChange={() => handleCategoryChange(category.id)}
+                      checked={selectedCategory === category.id.toString()}
+                      onChange={() => handleCategoryChange(category.id.toString())}
                       className="mr-2"
                     />
                     <label htmlFor={`category-${category.id}`} className="text-gray-700">

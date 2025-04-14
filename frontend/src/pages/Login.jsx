@@ -24,6 +24,7 @@ const Login = () => {
     // Redirect when logged in
     if (isSuccess || user) {
       navigate('/');
+      console.log('User data stored:', JSON.parse(localStorage.getItem('user')));
     }
     
     dispatch(reset());

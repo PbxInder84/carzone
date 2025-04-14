@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaStar, FaShoppingCart } from 'react-icons/fa';
 import { addToCart } from '../../features/cart/cartSlice';
 import { toast } from 'react-toastify';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
@@ -37,9 +38,13 @@ const ProductCard = ({ product }) => {
       <Link to={`/products/${product.id}`}>
         <div className="h-48 overflow-hidden">
           <img 
-            src={product.image_url || 'https://via.placeholder.com/300x200?text=No+Image'} 
+            src={getImageUrl(product.image_url)} 
             alt={product.name}
             className="w-full h-full object-cover object-center transform hover:scale-105 transition duration-300"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
+            }}
           />
         </div>
       </Link>
