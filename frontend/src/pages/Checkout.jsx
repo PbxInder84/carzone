@@ -7,6 +7,11 @@ import { clearCart } from '../features/cart/cartSlice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { FaSpinner, FaMoneyBillWave, FaMobile, FaUniversity } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { processCheckout } from '../features/checkout/checkoutSlice';
+import Spinner from '../components/layout/Spinner';
+import { getImageUrl } from '../utils/imageUtils';
+import { formatCurrency } from '../utils/formatters';
 
 const CheckoutPage = () => {
   const dispatch = useDispatch();
@@ -116,7 +121,7 @@ const CheckoutPage = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-medium">{formatCurrency(item.product.price * item.quantity)}</p>
                     </div>
                   </div>
                 ))}
@@ -125,7 +130,7 @@ const CheckoutPage = () => {
               <div className="space-y-2 text-lg">
                 <div className="flex justify-between border-t pt-2">
                   <p className="font-bold">Total:</p>
-                  <p className="font-bold">${cartTotal.toFixed(2)}</p>
+                  <p className="font-bold">{formatCurrency(cartTotal)}</p>
                 </div>
               </div>
             </>

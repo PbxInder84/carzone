@@ -2,17 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaStar, FaShoppingCart, FaArrowLeft } from 'react-icons/fa';
+import { FaStar, FaShoppingCart, FaArrowLeft, FaPlus, FaMinus, FaCartPlus } from 'react-icons/fa';
 import { getProduct, resetProduct } from '../features/products/productSlice';
 import { addToCart } from '../features/cart/cartSlice';
 import Spinner from '../components/layout/Spinner';
 import { getImageUrl } from '../utils/imageUtils';
+import ReviewForm from '../components/reviews/ReviewForm';
+import { getProductReviews, checkCanReview } from '../features/reviews/reviewSlice';
+import { formatCurrency } from '../utils/formatters';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { product, isLoading } = useSelector((state) => state.products);
   const { user } = useSelector((state) => state.auth);
+  const { canReview } = useSelector((state) => state.reviews);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
@@ -23,6 +27,13 @@ const ProductDetail = () => {
       dispatch(resetProduct());
     };
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (product && product.id && user) {
+      dispatch(checkCanReview(product.id));
+      dispatch(getProductReviews(product.id));
+    }
+  }, [product, user, dispatch]);
 
   const handleAddToCart = () => {
     if (!user) {
@@ -41,6 +52,14 @@ const ProductDetail = () => {
       .catch((error) => {
         toast.error(error);
       });
+  };
+
+  const refreshReviews = () => {
+    if (product) {
+      dispatch(getProductReviews(product.id));
+      // Reload product to get updated reviews
+      dispatch(getProduct(id));
+    }
   };
 
   if (isLoading) {
@@ -115,7 +134,7 @@ const ProductDetail = () => {
             </div>
             
             <div className="text-2xl font-bold text-primary-600 mb-4">
-              ${parseFloat(product.price).toFixed(2)}
+              {formatCurrency(parseFloat(product.price))}
             </div>
             
             <div className="mb-6">
@@ -171,6 +190,11 @@ const ProductDetail = () => {
         <div className="p-6 border-t border-gray-200">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Customer Reviews</h2>
           
+          {/* Only show review form for logged in users who can review */}
+          {user && canReview && (
+            <ReviewForm productId={product.id} onReviewSubmitted={refreshReviews} />
+          )}
+          
           {reviews.length > 0 ? (
             <div className="space-y-4">
               {reviews.map((review) => (
@@ -192,7 +216,7 @@ const ProductDetail = () => {
                       {review.user?.name || 'Anonymous'}
                     </span>
                   </div>
-                  <p className="text-gray-600">{review.comment}</p>
+                  <p className="text-gray-600">{review.review_text}</p>
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(review.created_at).toLocaleDateString()}
                   </p>

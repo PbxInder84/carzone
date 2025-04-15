@@ -6,6 +6,7 @@ import { FaMinus, FaPlus, FaTrash, FaShoppingCart, FaArrowLeft, FaShoppingBag, F
 import { getCartItems, updateCartItem, removeFromCart, clearCart } from '../features/cart/cartSlice';
 import Spinner from '../components/layout/Spinner';
 import { getImageUrl } from '../utils/imageUtils';
+import { formatCurrency } from '../utils/formatters';
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -168,18 +169,18 @@ const Cart = () => {
                         </Link>
                         
                         {item.product.discount_percent > 0 ? (
-                          <div className="flex flex-col mt-1">
-                            <span className="text-primary-600 font-medium">
-                              ${((1 - item.product.discount_percent / 100) * parseFloat(item.product.price)).toFixed(2)} each
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              {formatCurrency((1 - item.product.discount_percent / 100) * parseFloat(item.product.price))}
                             </span>
                             <span className="text-sm text-gray-500 line-through">
-                              ${parseFloat(item.product.price).toFixed(2)}
+                              {formatCurrency(parseFloat(item.product.price))}
                             </span>
                           </div>
                         ) : (
-                          <div className="text-gray-600 mt-1">
-                            ${parseFloat(item.product.price).toFixed(2)} each
-                          </div>
+                          <p className="font-medium">
+                            {formatCurrency(parseFloat(item.product.price))} each
+                          </p>
                         )}
                         
                         {/* Quantity Controls */}
@@ -249,7 +250,7 @@ const Cart = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between text-gray-600">
                       <span>Subtotal ({cartItems.length} item{cartItems.length > 1 ? 's' : ''})</span>
-                      <span className="font-medium">${cartTotal.toFixed(2)}</span>
+                      <span className="font-medium">{formatCurrency(cartTotal)}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
@@ -263,7 +264,7 @@ const Cart = () => {
                     <div className="my-4 border-t border-gray-200 pt-4">
                       <div className="flex justify-between text-lg font-bold text-gray-800">
                         <span>Estimated Total</span>
-                        <span>${cartTotal.toFixed(2)}</span>
+                        <span>{formatCurrency(cartTotal)}</span>
                       </div>
                     </div>
                     

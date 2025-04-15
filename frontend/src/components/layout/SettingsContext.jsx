@@ -41,7 +41,7 @@ export const SettingsProvider = ({ children }) => {
       contact: {
         email: getSetting('contact_email', 'support@carzone.com'),
         phone: getSetting('contact_phone', '+1-555-123-4567'),
-        address: getSetting('address', '123 Auto Street, Vehicle City, CA 90000'),
+        address: getSetting('address', 'Rajpura, Panjab, India - 140401'),
         socialMedia: getSetting('social_media', {
           facebook: 'https://facebook.com/carzone',
           twitter: 'https://twitter.com/carzone',
@@ -49,7 +49,7 @@ export const SettingsProvider = ({ children }) => {
         })
       },
       commerce: {
-        currency: getSetting('currency', 'USD'),
+        currency: getSetting('currency', 'INR'),
         taxRate: getSetting('tax_rate', 7.5),
         shippingFee: getSetting('shipping_fee', 15),
         freeShippingThreshold: getSetting('free_shipping_threshold', 150)

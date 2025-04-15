@@ -1,4 +1,4 @@
-import { Route, createRoutesFromElements, useLocation, Navigate } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,23 +29,9 @@ import AdminCategories from './pages/Admin/Categories';
 import ProductForm from './pages/Admin/Products/ProductForm';
 import OrderDetail from './pages/Admin/OrderDetail';
 import UserOrderDetail from './pages/Profile/OrderDetail';
-
-// Add this component somewhere after the other imports at the top
-const Debug = () => {
-  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
-  
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Debug Info</h1>
-      <div className="bg-gray-100 p-4 rounded">
-        <h2 className="text-lg font-semibold mb-2">User Data in localStorage:</h2>
-        <pre className="bg-white p-2 rounded border border-gray-300 overflow-x-auto">
-          {JSON.stringify(user, null, 2)}
-        </pre>
-      </div>
-    </div>
-  );
-};
+import PolicyPage from './pages/PolicyPage';
+import NotFound from './pages/NotFound';
+import Debug from './pages/Debug';
 
 // Layout component with header and footer
 const Layout = () => {
@@ -63,84 +49,105 @@ const Layout = () => {
   );
 };
 
-// Create router with future flags enabled
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route>
-      {/* Main Layout Routes */}
-      <Route element={<Layout />}>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/debug" element={<Debug />} />
-        
-        {/* Protected Routes - Any user */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/edit" element={<EditProfile />} />
-          <Route path="/profile/change-password" element={<ChangePassword />} />
-          <Route path="/orders" element={<AdminOrders />} />
-          <Route path="/account/orders/:id" element={<UserOrderDetail />} />
-          <Route path="/orders/:id" element={<UserOrderDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-        </Route>
-      </Route>
-      
-      {/* Dashboard Layout - Admin and Seller only */}
-      <Route element={<ProtectedRoute allowedRoles={['admin', 'seller']} />}>
-        <Route element={<DashboardLayout />} path="/dashboard">
-          <Route index element={<Dashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="products/new" element={<ProductForm />} />
-          <Route path="products/edit/:id" element={<ProductForm />} />
-          <Route path="categories" element={<AdminCategories />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="orders/:id" element={<OrderDetail />} />
-          
-          {/* Admin Only Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="users" element={<AdminUsers />} />
-          </Route>
-          
-          <Route path="settings" element={<AdminSettings />} />
-        </Route>
-      </Route>
-      
-      {/* Redirect legacy /admin/* routes to /dashboard/* for backward compatibility */}
-      <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
-      <Route path="/admin/orders" element={<Navigate to="/dashboard/orders" replace />} />
-      <Route path="/admin/products" element={<Navigate to="/dashboard/products" replace />} />
-      <Route path="/admin/categories" element={<Navigate to="/dashboard/categories" replace />} />
-      <Route path="/admin/users" element={<Navigate to="/dashboard/users" replace />} />
-      <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
-      
-      {/* Direct access routes for admin orders */}
-      <Route element={<ProtectedRoute allowedRoles={['admin', 'seller']} />}>
-        <Route path="/admin/orders/:id" element={<OrderDetail />} />
-      </Route>
-      
-      {/* Redirect /seller/* routes to appropriate dashboard sections */}
-      <Route path="/seller/products" element={
-        <ProtectedRoute allowedRoles={['seller']}>
-          <Navigate to="/dashboard/products" replace />
-        </ProtectedRoute>
-      } />
-    </Route>
-  ),
+// Create router with direct route objects instead of JSX syntax
+const router = createBrowserRouter([
   {
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true
-    }
+    path: "/",
+    element: <Layout />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "products", element: <Products /> },
+      { path: "products/:id", element: <ProductDetail /> },
+      { path: "product/:id", element: <ProductDetail /> },
+      { path: "about", element: <About /> },
+      { path: "contact", element: <Contact /> },
+      { path: "debug", element: <Debug /> },
+      
+      // Policy Pages
+      { path: "privacy-policy", element: <PolicyPage type="privacy" /> },
+      { path: "terms-conditions", element: <PolicyPage type="terms" /> },
+      { path: "shipping-policy", element: <PolicyPage type="shipping" /> },
+      { path: "sitemap", element: <PolicyPage type="sitemap" /> },
+      
+      // Protected Routes - wrapped with ProtectedRoute element
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: "profile", element: <Profile /> },
+          { path: "profile/edit", element: <EditProfile /> },
+          { path: "profile/change-password", element: <ChangePassword /> },
+          { path: "orders", element: <AdminOrders /> },
+          { path: "account/orders/:id", element: <UserOrderDetail /> },
+          { path: "orders/:id", element: <UserOrderDetail /> },
+          { path: "cart", element: <Cart /> },
+          { path: "checkout", element: <Checkout /> },
+          { path: "order-confirmation/:orderId", element: <OrderConfirmation /> }
+        ]
+      },
+      
+      // 404 catch-all
+      { path: "*", element: <NotFound /> }
+    ]
+  },
+  
+  // Dashboard Layout - Admin and Seller only
+  {
+    path: "/dashboard",
+    element: <ProtectedRoute allowedRoles={['admin', 'seller']} />,
+    children: [
+      {
+        element: <DashboardLayout />,
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: "products", element: <AdminProducts /> },
+          { path: "products/new", element: <ProductForm /> },
+          { path: "products/edit/:id", element: <ProductForm /> },
+          { path: "categories", element: <AdminCategories /> },
+          { path: "orders", element: <AdminOrders /> },
+          { path: "orders/:id", element: <OrderDetail /> },
+          
+          // Admin Only Routes
+          {
+            element: <ProtectedRoute allowedRoles={['admin']} />,
+            children: [
+              { path: "users", element: <AdminUsers /> }
+            ]
+          },
+          
+          { path: "settings", element: <AdminSettings /> }
+        ]
+      }
+    ]
+  },
+  
+  // Redirect legacy /admin/* routes to /dashboard/* for backward compatibility
+  { path: "/admin", element: <Navigate to="/dashboard" replace /> },
+  { path: "/admin/orders", element: <Navigate to="/dashboard/orders" replace /> },
+  { path: "/admin/products", element: <Navigate to="/dashboard/products" replace /> },
+  { path: "/admin/categories", element: <Navigate to="/dashboard/categories" replace /> },
+  { path: "/admin/users", element: <Navigate to="/dashboard/users" replace /> },
+  { path: "/admin/dashboard", element: <Navigate to="/dashboard" replace /> },
+  
+  // Direct access routes for admin orders
+  {
+    path: "/admin/orders/:id",
+    element: <ProtectedRoute allowedRoles={['admin', 'seller']} />,
+    children: [
+      { index: true, element: <OrderDetail /> }
+    ]
+  },
+  
+  // Redirect /seller/* routes to appropriate dashboard sections
+  {
+    path: "/seller/products",
+    element: <ProtectedRoute allowedRoles={['seller']} />,
+    children: [
+      { index: true, element: <Navigate to="/dashboard/products" replace /> }
+    ]
   }
-);
+]);
 
 function App() {
   return (

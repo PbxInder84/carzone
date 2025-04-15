@@ -83,8 +83,8 @@ const Contact = () => {
               title="Our Location"
               content={
                 <>
-                  123 Auto Avenue, Car City<br />
-                  CC 12345, United States
+                  CarZone Headquarters<br />
+                  Rajpura, Panjab, India - 140401
                 </>
               }
             />
@@ -94,8 +94,8 @@ const Contact = () => {
               title="Phone Number"
               content={
                 <>
-                  <a href="tel:+11234567890" className="hover:text-primary-600 transition-colors">+1 (123) 456-7890</a><br />
-                  <a href="tel:+19876543210" className="hover:text-primary-600 transition-colors">+1 (987) 654-3210</a>
+                  <a href="tel:+919876543210" className="hover:text-primary-600 transition-colors">+91 98765 43210</a><br />
+                  <a href="tel:+911234567890" className="hover:text-primary-600 transition-colors">+91 12345 67890</a>
                 </>
               }
             />
@@ -105,8 +105,8 @@ const Contact = () => {
               title="Email Address"
               content={
                 <>
-                  <a href="mailto:info@carzone.com" className="hover:text-primary-600 transition-colors">info@carzone.com</a><br />
-                  <a href="mailto:support@carzone.com" className="hover:text-primary-600 transition-colors">support@carzone.com</a>
+                  <a href="mailto:info@carzone.in" className="hover:text-primary-600 transition-colors">info@carzone.in</a><br />
+                  <a href="mailto:support@carzone.in" className="hover:text-primary-600 transition-colors">support@carzone.in</a>
                 </>
               }
             />
@@ -132,13 +132,13 @@ const Contact = () => {
             <div className="lg:col-span-3 backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="aspect-video w-full">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.30591910506!2d-74.25986548248684!3d40.697149421543594!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2sca!4v1619913723783!5m2!1sen!2sca" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27396.36767316924!2d76.5788957!3d30.5172566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390fea1aaaa9d7f1%3A0xb3e5bbe0929ac342!2sRajpura%2C%20Punjab%20140401!5e0!3m2!1sen!2sin!4v1684232041230!5m2!1sen!2sin" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 
                   allowFullScreen="" 
                   loading="lazy"
-                  title="CarZone Location"
+                  title="CarZone Location in Rajpura, Panjab"
                 ></iframe>
               </div>
             </div>

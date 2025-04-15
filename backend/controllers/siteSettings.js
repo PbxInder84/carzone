@@ -383,7 +383,7 @@ exports.initializeSettings = asyncHandler(async (req, res) => {
     },
     {
       key: 'currency',
-      value: 'USD',
+      value: 'INR',
       type: 'string',
       group: 'commerce',
       label: 'Currency',

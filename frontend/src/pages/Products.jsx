@@ -6,6 +6,9 @@ import { getCategories } from '../features/categories/categorySlice';
 import ProductCard from '../components/products/ProductCard';
 import Spinner from '../components/layout/Spinner';
 import { FaFilter, FaSortAmountDown, FaSortAmountUpAlt, FaTimes, FaArrowRight, FaShoppingBag, FaTags, FaDollarSign, FaSlidersH } from 'react-icons/fa';
+import { resetFilteredProducts, setFilters } from '../features/products/productSlice';
+import { getImageUrl } from '../utils/imageUtils';
+import { formatCurrency, formatNumber } from '../utils/formatters';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -166,7 +169,7 @@ const Products = () => {
                 )}
                 {(priceRange.min || priceRange.max) && (
                   <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs inline-flex items-center">
-                    Price: ${priceRange.min || '0'} - ${priceRange.max || '∞'}
+                    Price: {formatCurrency(priceRange.min || 0, true)} - {priceRange.max ? formatCurrency(priceRange.max, true) : '∞'}
                     <button 
                       onClick={() => setPriceRange({ min: '', max: '' })}
                       className="ml-1 text-primary-600 hover:text-primary-800"

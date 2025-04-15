@@ -8,9 +8,11 @@ import Spinner from '../components/layout/Spinner';
 import { 
   FaCar, FaTools, FaWrench, FaLightbulb, FaStar, FaChevronDown, 
   FaShieldAlt, FaShippingFast, FaCreditCard, FaTag, FaOilCan,
-  FaBolt, FaTachometerAlt, FaCog
+  FaBolt, FaTachometerAlt, FaCog, FaArrowRight, FaHeadset, FaRedo
 } from 'react-icons/fa';
 import { useSettings } from '../utils/useSettings';
+import { useSiteSettings } from '../components/layout/SettingsContext';
+import { formatCurrency } from '../utils/formatters';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -269,8 +271,12 @@ const Home = () => {
                         `${getSetting('site_name', 'CarZone')} Premium Collection`}
                     </h3>
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl font-bold text-white">${getSetting('special_price', '199')}</span>
-                      <span className="text-sm text-gray-300 line-through">${getSetting('special_original_price', '249')}</span>
+                      <span className="text-xl font-bold text-white">
+                        {formatCurrency(getSetting('special_price', '199'))}
+                      </span>
+                      <span className="text-sm text-gray-300 line-through">
+                        {formatCurrency(getSetting('special_original_price', '249'))}
+                      </span>
                       <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded">{getSetting('special_discount', '20%')} OFF</span>
                     </div>
                     <Link 
@@ -288,6 +294,194 @@ const Home = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Customer Testimonials */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Don't just take our word for it. Here's what our customers have to say about their experience with us.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-white p-6 rounded-xl shadow-md relative">
+              <div className="absolute -top-4 left-6 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar key={i} className="text-yellow-400 mr-1" />
+                  ))}
+                </div>
+              </div>
+              <p className="text-gray-600 italic mb-4">"The quality of the parts I received was exceptional. Everything fit perfectly, and the shipping was faster than expected. Definitely my go-to source for car parts now!"</p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-4">
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Rajesh Patel</h4>
+                  <p className="text-gray-500 text-sm">Bangalore, Karnataka</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Testimonial 2 */}
+            <div className="bg-white p-6 rounded-xl shadow-md relative">
+              <div className="absolute -top-4 left-6 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar key={i} className={i < 4 ? "text-yellow-400 mr-1" : "text-gray-300 mr-1"} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-gray-600 italic mb-4">"I was skeptical about ordering car accessories online, but the customer service team was incredibly helpful. They guided me through the selection process and even followed up after delivery."</p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-4">
+                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Priya Sharma</h4>
+                  <p className="text-gray-500 text-sm">Delhi, NCR</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Testimonial 3 */}
+            <div className="bg-white p-6 rounded-xl shadow-md relative">
+              <div className="absolute -top-4 left-6 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                </svg>
+              </div>
+              <div className="flex items-center mb-4">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar key={i} className="text-yellow-400 mr-1" />
+                  ))}
+                </div>
+              </div>
+              <p className="text-gray-600 italic mb-4">"The performance upgrade kit I purchased has completely transformed my driving experience. The installation instructions were clear, and the results exceeded my expectations. Worth every rupee!"</p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden mr-4">
+                  <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Customer" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Vikram Singh</h4>
+                  <p className="text-gray-500 text-sm">Mumbai, Maharashtra</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link to="/testimonials" className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+              Read More Customer Stories
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* FAQ Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Have questions? We've got answers to the most common questions our customers ask.</p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto divide-y divide-gray-200">
+            {/* FAQ Item 1 */}
+            <div className="py-5">
+              <details className="group">
+                <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
+                  <span className="text-lg font-semibold">How long does shipping take?</span>
+                  <span className="transition group-open:rotate-180">
+                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </span>
+                </summary>
+                <p className="text-gray-600 mt-3 group-open:animate-fadeIn">
+                  Standard shipping usually takes 3-5 business days across major Indian cities. For remote areas, it may take 5-7 business days. We offer express shipping options at checkout for faster delivery.
+                </p>
+              </details>
+            </div>
+            
+            {/* FAQ Item 2 */}
+            <div className="py-5">
+              <details className="group">
+                <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
+                  <span className="text-lg font-semibold">What is your return policy?</span>
+                  <span className="transition group-open:rotate-180">
+                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </span>
+                </summary>
+                <p className="text-gray-600 mt-3 group-open:animate-fadeIn">
+                  We offer a 30-day return policy on most products. If you're not satisfied with your purchase, you can return it within 30 days for a full refund or exchange. Please note that the items must be in their original condition and packaging.
+                </p>
+              </details>
+            </div>
+            
+            {/* FAQ Item 3 */}
+            <div className="py-5">
+              <details className="group">
+                <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
+                  <span className="text-lg font-semibold">Are the products compatible with all car models?</span>
+                  <span className="transition group-open:rotate-180">
+                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </span>
+                </summary>
+                <p className="text-gray-600 mt-3 group-open:animate-fadeIn">
+                  Each product listing includes compatibility information. You can use our vehicle finder tool to check if a product fits your specific car make and model. If you're unsure, our customer service team is always available to assist you.
+                </p>
+              </details>
+            </div>
+            
+            {/* FAQ Item 4 */}
+            <div className="py-5">
+              <details className="group">
+                <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
+                  <span className="text-lg font-semibold">Do you offer installation services?</span>
+                  <span className="transition group-open:rotate-180">
+                    <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
+                      <path d="M6 9l6 6 6-6"></path>
+                    </svg>
+                  </span>
+                </summary>
+                <p className="text-gray-600 mt-3 group-open:animate-fadeIn">
+                  Yes, we partner with certified mechanics across major Indian cities. During checkout, you can select the installation service option, and our team will coordinate with a local partner in your area. Additional charges may apply based on the complexity of installation.
+                </p>
+              </details>
+            </div>
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link to="/faq" className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+              View All FAQs
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>

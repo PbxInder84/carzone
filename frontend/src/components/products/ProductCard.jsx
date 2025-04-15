@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { addToCart } from '../../features/cart/cartSlice';
 import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaEye } from 'react-icons/fa';
+import { formatCurrency } from '../../utils/formatters';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
@@ -67,12 +68,12 @@ const ProductCard = ({ product }) => {
       
       {/* Stock indicator */}
       <div className="absolute top-3 right-3 z-10">
-        {product.stock > 10 ? (
+        {product.stock_quantity > 10 ? (
           <span className="bg-green-100 text-green-700 text-xs py-1 px-2 rounded-full flex items-center">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block mr-1"></span>
             In Stock
           </span>
-        ) : product.stock > 0 ? (
+        ) : product.stock_quantity > 0 ? (
           <span className="bg-amber-100 text-amber-700 text-xs py-1 px-2 rounded-full flex items-center">
             <span className="w-1.5 h-1.5 bg-amber-500 rounded-full inline-block mr-1"></span>
             Low Stock
@@ -144,34 +145,35 @@ const ProductCard = ({ product }) => {
           </span>
         </div>
         
+        {/* Product Price */}
+        <div className="flex items-center space-x-2 mb-4">
+          {product.discount_percent > 0 ? (
+            <>
+              <span className="text-lg font-bold text-primary-600">
+                {formatCurrency((parseFloat(product.price || 0) * (1 - product.discount_percent / 100)))}
+              </span>
+              <span className="text-sm text-gray-500 line-through">
+                {formatCurrency(parseFloat(product.price || 0))}
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-primary-600">
+              {formatCurrency(parseFloat(product.price || 0))}
+            </span>
+          )}
+        </div>
+        
         {/* Price and Add to Cart */}
         <div className="mt-3 flex items-center justify-between">
-          <div>
-            {product.discount_percent > 0 ? (
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-primary-600">
-                  ${(parseFloat(product.price || 0) * (1 - product.discount_percent / 100)).toFixed(2)}
-                </span>
-                <span className="text-sm text-gray-500 line-through">
-                  ${parseFloat(product.price || 0).toFixed(2)}
-                </span>
-              </div>
-            ) : (
-              <span className="text-lg font-bold text-primary-600">
-                ${parseFloat(product.price || 0).toFixed(2)}
-              </span>
-            )}
-          </div>
-          
           <button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
+            disabled={product.stock_quantity === 0}
             className={`${
-              product.stock === 0
+              product.stock_quantity === 0
                 ? 'bg-gray-300 cursor-not-allowed'
                 : 'bg-primary-600 hover:bg-primary-700'
             } text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md transform transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
-            title={product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            title={product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
           >
             <FaShoppingCart />
           </button>

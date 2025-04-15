@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { fetchOrderConfirmation, updatePaymentDetails } from '../features/checkout/checkoutSlice';
-import { FaSpinner, FaShoppingCart, FaTruck, FaCheck, FaExclamationTriangle, FaMoneyBillWave, FaMobile, FaUniversity, FaEdit } from 'react-icons/fa';
+import { FaSpinner, FaShoppingCart, FaTruck, FaCheck, FaExclamationTriangle, FaMoneyBillWave, FaMobile, FaUniversity, FaEdit, FaCheckCircle, FaShoppingBag, FaFileInvoice, FaPrint, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
 import * as Yup from 'yup';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { formatCurrency } from '../utils/formatters';
 
 // Helper function to safely format prices
 const formatPrice = (price) => {
-  // Convert to number if it's a string
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  // Check if it's a valid number
-  return !isNaN(numPrice) ? numPrice.toFixed(2) : '0.00';
+  return formatCurrency(price, true);
 };
 
 const OrderConfirmation = () => {
@@ -138,14 +136,12 @@ const OrderConfirmation = () => {
                   />
                   <div className="flex-1">
                     <h3 className="font-medium text-lg">{item.product.name}</h3>
-                    <p className="text-gray-600">
-                      Quantity: {item.quantity} × ${formatPrice(item.price_at_time_of_order)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">
-                      ${formatPrice(item.quantity * item.price_at_time_of_order)}
-                    </p>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-600">Quantity: {item.quantity} × {formatCurrency(item.price_at_time_of_order)}</span>
+                      <span className="font-semibold">
+                        {formatCurrency(item.quantity * item.price_at_time_of_order)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -309,7 +305,7 @@ const OrderConfirmation = () => {
             <div className="pt-4 border-t">
               <div className="flex justify-between pb-2">
                 <span className="font-bold">Total Amount:</span>
-                <span className="font-bold text-xl">${formatPrice(orderConfirmation.total_amount)}</span>
+                <span className="font-bold text-xl">{formatCurrency(orderConfirmation.total_amount)}</span>
               </div>
             </div>
             

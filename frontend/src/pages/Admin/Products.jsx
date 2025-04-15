@@ -12,6 +12,8 @@ import {
 import { getCategories } from '../../features/categories/categorySlice';
 import Spinner from '../../components/common/Spinner';
 import Modal from '../../components/common/Modal';
+import { getImageUrl } from '../../utils/imageUtils';
+import { formatCurrency } from '../../utils/formatters';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -265,7 +267,7 @@ const Products = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            ${parseFloat(product.price).toFixed(2)}
+                            {formatCurrency(parseFloat(product.price))}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
