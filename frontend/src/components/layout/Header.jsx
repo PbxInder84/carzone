@@ -79,10 +79,10 @@ const Header = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
         isHomePage && !scrolled 
-          ? 'bg-transparent backdrop-blur-md bg-black/20' 
+          ? 'bg-transparent backdrop-blur-0' 
           : scrolled 
-            ? 'bg-primary-800/90 backdrop-blur-xl shadow-lg' 
-            : 'bg-primary-800/80 backdrop-blur-md'
+            ? 'bg-primary-800/95 backdrop-blur-md shadow-lg' 
+            : 'bg-primary-800/80 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4 py-4">

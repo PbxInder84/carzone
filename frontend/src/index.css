@@ -72,33 +72,3 @@ code {
     }
   }
 }
-
-/* Custom classes */
-@layer utilities {
-  .bg-grid-pattern {
-    background-image: 
-      linear-gradient(to right, #e5e7eb 1px, transparent 1px),
-      linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-  
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  
-  .transform-style-3d {
-    transform-style: preserve-3d;
-  }
-  
-  .translate-z-\[-20px\] {
-    transform: translateZ(-20px);
-  }
-  
-  .rotate-y-5 {
-    transform: rotateY(5deg);
-  }
-  
-  .rotate-x-5 {
-    transform: rotateX(5deg);
-  }
-}
