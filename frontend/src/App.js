@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import { SettingsProvider } from './components/layout/SettingsContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -143,10 +144,10 @@ const router = createBrowserRouter(
 
 function App() {
   return (
-    <>
+    <SettingsProvider>
       <RouterProvider router={router} />
       <ToastContainer position="top-right" autoClose={3000} />
-    </>
+    </SettingsProvider>
   );
 }
 

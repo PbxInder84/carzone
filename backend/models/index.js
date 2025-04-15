@@ -7,6 +7,7 @@ const Cart = require('./Cart');
 const ProductCategory = require('./ProductCategory');
 const Coupon = require('./Coupon');
 const OrderCoupon = require('./OrderCoupon');
+const SiteSettings = require('./SiteSettings');
 
 // User Associations
 User.hasMany(Product, { foreignKey: 'seller_id', as: 'products' });
@@ -58,5 +59,6 @@ module.exports = {
   Cart,
   ProductCategory,
   Coupon,
-  OrderCoupon
+  OrderCoupon,
+  SiteSettings
 }; 

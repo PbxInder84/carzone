@@ -24,6 +24,7 @@ const reviewRoutes = require('./routes/reviews');
 const cartRoutes = require('./routes/cart');
 const userRoutes = require('./routes/users');
 const checkoutRoutes = require('./routes/checkout');
+const settingsRoutes = require('./routes/settings');
 
 // Connect to database
 connectDB();
@@ -95,6 +96,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/checkout', checkoutRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

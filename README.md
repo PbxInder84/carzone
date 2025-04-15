@@ -30,13 +30,13 @@ An e-commerce platform for car accessories built with the MERN stack (MySQL, Exp
 ### Installation
 
 1. Clone the repository:
-   ```bash
+   ```powershell
    git clone https://github.com/your-username/carzone.git
    cd carzone
    ```
 
 2. Install the dependencies:
-   ```bash
+   ```powershell
    # Install backend dependencies
    npm install
    
@@ -46,11 +46,15 @@ An e-commerce platform for car accessories built with the MERN stack (MySQL, Exp
    cd ..
    ```
 
-3. Create a `.env` file in the root directory based on the `.env.example` template.
+3. Create a `.env` file in the root directory based on the `.env.example` template:
+   ```powershell
+   Copy-Item .env.example .env
+   # Then edit the .env file with your specific configurations
+   ```
 
 4. Create the database:
-   ```bash
-   # Connect to MySQL
+   ```powershell
+   # Connect to MySQL (Windows)
    mysql -u root -p
    
    # Create the database
@@ -61,13 +65,13 @@ An e-commerce platform for car accessories built with the MERN stack (MySQL, Exp
    ```
 
 5. Initialize the database schema:
-   ```bash
+   ```powershell
    # Run the database migration
    mysql -u root -p carzone < .docs/schema.sql
    ```
 
 6. Start the development server:
-   ```bash
+   ```powershell
    # Run both frontend and backend concurrently
    npm run dev
    
@@ -133,6 +137,36 @@ To automatically sync your Sequelize models with the database during development
 - `POST /api/orders` - Create a new order
 - `PUT /api/orders/:id/status` - Update order status
 - `DELETE /api/orders/:id` - Delete order
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Errors**:
+   ```powershell
+   # Check if MySQL service is running
+   Get-Service -Name "MySQL*"
+   
+   # Start MySQL service if stopped
+   Start-Service -Name "MySQL*"
+   ```
+
+2. **Port Already in Use**:
+   ```powershell
+   # Find process using port 5000 (backend)
+   netstat -ano | findstr :5000
+   
+   # Kill the process using the identified PID
+   Stop-Process -Id <PID> -Force
+   ```
+
+3. **Node Module Issues**:
+   ```powershell
+   # Clear npm cache and reinstall
+   npm cache clean --force
+   rm -r -fo node_modules
+   npm install
+   ```
 
 ## License
 

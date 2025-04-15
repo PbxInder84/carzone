@@ -14,7 +14,7 @@ const CheckoutPage = () => {
   
   const { cartItems, cartTotal, isLoading: cartLoading } = useSelector((state) => state.cart);
   const { currentOrder, isLoading, success, error } = useSelector((state) => state.checkout);
-  const { user } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   
   const [orderPlaced, setOrderPlaced] = useState(false);
 

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaShoppingCart, FaUserAlt, FaSignOutAlt, FaSignInAlt, FaUserPlus, FaSearch, FaBars, FaTimes, FaCar } from 'react-icons/fa';
+import { FaShoppingCart, FaUserAlt, FaSignInAlt, FaUserPlus, FaSearch, FaBars, FaTimes, FaCar } from 'react-icons/fa';
 import { logout } from '../../features/auth/authSlice';
-import CartIcon from './CartIcon';
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -79,46 +79,60 @@ const Header = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
         isHomePage && !scrolled 
-          ? 'bg-transparent' 
+          ? 'bg-transparent backdrop-blur-md bg-black/20' 
           : scrolled 
-            ? 'bg-primary-800 shadow-lg' 
-            : 'bg-primary-800 bg-opacity-90'
-      } text-white`}
+            ? 'bg-primary-800/90 backdrop-blur-xl shadow-lg' 
+            : 'bg-primary-800/80 backdrop-blur-md'
+      }`}
     >
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold flex items-center space-x-2">
-            <FaCar className="text-secondary-400" />
-            <div className="flex">
-              <span className="text-white">Car</span>
-              <span className="text-secondary-400">Zone</span>
+          <Link 
+            to="/" 
+            className="text-2xl font-bold flex items-center space-x-2 group"
+          >
+            <div className="relative">
+              <FaCar className="text-secondary-400 text-3xl transition-transform duration-300 group-hover:scale-110" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-secondary-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="flex items-baseline">
+              <span className="text-white font-extrabold tracking-tight">Car</span>
+              <span className="text-secondary-400 font-extrabold tracking-tight">Zone</span>
             </div>
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             <Link 
               to="/" 
-              className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/' ? 'text-secondary-400 font-medium' : ''}`}
+              className={`hover:text-secondary-400 transition-all duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-secondary-400 after:transition-all after:duration-300 ${
+                location.pathname === '/' ? 'text-secondary-400 font-medium after:w-full' : 'text-white'
+              }`}
             >
               Home
             </Link>
             <Link 
               to="/products" 
-              className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/products' ? 'text-secondary-400 font-medium' : ''}`}
+              className={`hover:text-secondary-400 transition-all duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-secondary-400 after:transition-all after:duration-300 ${
+                location.pathname === '/products' ? 'text-secondary-400 font-medium after:w-full' : 'text-white'
+              }`}
             >
               Products
             </Link>
             <Link 
               to="/about" 
-              className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/about' ? 'text-secondary-400 font-medium' : ''}`}
+              className={`hover:text-secondary-400 transition-all duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-secondary-400 after:transition-all after:duration-300 ${
+                location.pathname === '/about' ? 'text-secondary-400 font-medium after:w-full' : 'text-white'
+              }`}
             >
               About
             </Link>
             <Link 
               to="/contact" 
-              className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/contact' ? 'text-secondary-400 font-medium' : ''}`}
+              className={`hover:text-secondary-400 transition-all duration-300 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-secondary-400 after:transition-all after:duration-300 ${
+                location.pathname === '/contact' ? 'text-secondary-400 font-medium after:w-full' : 'text-white'
+              }`}
             >
               Contact
             </Link>
@@ -126,17 +140,17 @@ const Header = () => {
           
           {/* Search Bar */}
           <div className="hidden md:block flex-1 mx-6 max-w-md">
-            <form onSubmit={handleSearch} className="flex">
+            <form onSubmit={handleSearch} className="flex relative group">
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full px-4 py-2 rounded-l text-gray-800 focus:outline-none focus:ring focus:ring-secondary-300"
+                className="w-full px-4 py-2 rounded-full text-gray-800 focus:outline-none border-2 border-transparent focus:border-secondary-400 transition-all duration-300 pr-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button
                 type="submit"
-                className="bg-secondary-600 text-white px-4 py-2 rounded-r hover:bg-secondary-700 transition duration-300"
+                className="absolute right-0 top-0 bottom-0 flex items-center justify-center w-10 text-primary-600 hover:text-secondary-600 transition-colors duration-300 focus:outline-none"
               >
                 <FaSearch />
               </button>
@@ -144,73 +158,96 @@ const Header = () => {
           </div>
           
           {/* User Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user && <CartIcon />}
+          <div className="hidden md:flex items-center space-x-5">
+            {user && (
+              <div className="relative">
+                <Link to="/cart" className="relative group">
+                  <FaShoppingCart className="text-xl text-white hover:text-secondary-400 transition-colors duration-300" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-secondary-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            )}
             
             {user ? (
               <div className="relative">
                 <button 
                   id="user-dropdown-button"
-                  className="flex items-center space-x-1 hover:text-secondary-400 transition duration-300"
+                  className="flex items-center space-x-2 hover:text-secondary-400 transition-all duration-300 group"
                   onClick={toggleDropdown}
                 >
-                  <FaUserAlt className="text-xl" />
-                  <span className="hidden lg:inline-block">{user.data?.name || 'Account'}</span>
+                  <div className="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center overflow-hidden border-2 border-transparent group-hover:border-secondary-400 transition-all duration-300">
+                    {user.data?.name ? (
+                      <span className="text-white text-lg font-semibold">
+                        {user.data.name.charAt(0).toUpperCase()}
+                      </span>
+                    ) : (
+                      <FaUserAlt className="text-lg text-white" />
+                    )}
+                  </div>
                 </button>
                 {isDropdownOpen && (
                   <div 
                     id="user-dropdown"
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-10 border border-gray-100 transform transition-all duration-300 opacity-100 scale-100"
+                    style={{transformOrigin: 'top right'}}
                   >
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user.data?.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.data?.email}</p>
+                    </div>
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-700"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-700"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      My Profile
+                      <span className="mr-2">👤</span> My Profile
                     </Link>
                     <Link
                       to="/orders"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-700"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-700"
                       onClick={() => setIsDropdownOpen(false)}
                     >
-                      My Orders
+                      <span className="mr-2">📦</span> My Orders
                     </Link>
                     {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
                       <Link
                         to="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-700"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-700"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        Dashboard
+                        <span className="mr-2">📊</span> Dashboard
                       </Link>
                     ) : null}
                     <button
                       onClick={onLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-700"
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 border-t border-gray-100"
                     >
-                      Logout
+                      <span className="mr-2">🚪</span> Logout
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <>
-                <Link to="/login" className="hover:text-secondary-400 transition duration-300 flex items-center space-x-1">
-                  <FaSignInAlt className="text-xl" />
+              <div className="flex items-center space-x-3">
+                <Link to="/login" className="hover:text-secondary-400 transition duration-300 flex items-center space-x-1 px-3 py-1 rounded-md hover:bg-primary-700/50">
+                  <FaSignInAlt className="text-lg" />
                   <span className="hidden lg:inline-block">Login</span>
                 </Link>
-                <Link to="/register" className="hover:text-secondary-400 transition duration-300 flex items-center space-x-1">
-                  <FaUserPlus className="text-xl" />
+                <Link to="/register" className="text-white bg-secondary-600 hover:bg-secondary-500 transition-all duration-300 px-4 py-1.5 rounded-md flex items-center space-x-1 shadow-md hover:shadow-lg">
+                  <FaUserPlus className="text-lg" />
                   <span className="hidden lg:inline-block">Register</span>
                 </Link>
-              </>
+              </div>
             )}
           </div>
           
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-white focus:outline-none"
+            className="md:hidden text-white focus:outline-none p-1 rounded-md hover:bg-primary-700/50 transition-colors duration-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
@@ -220,127 +257,156 @@ const Header = () => {
         
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-4 bg-primary-800 absolute left-0 right-0 px-4 py-3 shadow-lg">
-            <form onSubmit={handleSearch} className="flex mb-4">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full px-4 py-2 rounded-l text-gray-800 focus:outline-none focus:ring focus:ring-secondary-300"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="bg-secondary-600 text-white px-4 py-2 rounded-r hover:bg-secondary-700 transition duration-300"
-              >
-                <FaSearch />
-              </button>
-            </form>
-            
-            <nav className="flex flex-col space-y-3 pb-3 border-b border-primary-700">
-              <Link 
-                to="/" 
-                className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/' ? 'text-secondary-400 font-medium' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link 
-                to="/products" 
-                className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/products' ? 'text-secondary-400 font-medium' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Products
-              </Link>
-              <Link 
-                to="/about" 
-                className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/about' ? 'text-secondary-400 font-medium' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link 
-                to="/contact" 
-                className={`hover:text-secondary-400 transition duration-300 ${location.pathname === '/contact' ? 'text-secondary-400 font-medium' : ''}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Contact
-              </Link>
-            </nav>
-            
-            {/* Mobile Menu Links */}
-            <div className="flex flex-col space-y-3 pt-3">
-              <div className="flex items-center justify-between border-b border-primary-700 pb-3">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-primary-800/95 backdrop-blur-md shadow-lg border-t border-primary-700/50 transition-all duration-300 transform translate-y-0 z-20">
+            <div className="px-4 py-5 space-y-4">
+              <form onSubmit={handleSearch} className="flex relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full px-4 py-2 rounded-full text-gray-800 focus:outline-none border-2 border-transparent focus:border-secondary-400 transition-all duration-300 pr-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="absolute right-0 top-0 bottom-0 flex items-center justify-center w-10 text-primary-600 hover:text-secondary-600 transition-colors duration-300"
+                >
+                  <FaSearch />
+                </button>
+              </form>
+              
+              <nav className="flex flex-col space-y-3">
+                <Link 
+                  to="/" 
+                  className={`py-2 px-3 rounded-md transition duration-300 ${
+                    location.pathname === '/' 
+                      ? 'text-secondary-400 bg-primary-700/50 font-medium' 
+                      : 'text-white hover:bg-primary-700/30'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <Link 
+                  to="/products" 
+                  className={`py-2 px-3 rounded-md transition duration-300 ${
+                    location.pathname === '/products' 
+                      ? 'text-secondary-400 bg-primary-700/50 font-medium' 
+                      : 'text-white hover:bg-primary-700/30'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Products
+                </Link>
+                <Link 
+                  to="/about" 
+                  className={`py-2 px-3 rounded-md transition duration-300 ${
+                    location.pathname === '/about' 
+                      ? 'text-secondary-400 bg-primary-700/50 font-medium' 
+                      : 'text-white hover:bg-primary-700/30'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link 
+                  to="/contact" 
+                  className={`py-2 px-3 rounded-md transition duration-300 ${
+                    location.pathname === '/contact' 
+                      ? 'text-secondary-400 bg-primary-700/50 font-medium' 
+                      : 'text-white hover:bg-primary-700/30'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Contact
+                </Link>
+              </nav>
+              
+              <div className="pt-3 border-t border-primary-700/50">
                 {user ? (
-                  <>
-                    <div className="flex items-center space-x-2">
-                      <FaUserAlt />
-                      <span>{user.data?.name || 'User'}</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
+                          {user.data?.name ? (
+                            <span className="text-white text-lg font-semibold">
+                              {user.data.name.charAt(0).toUpperCase()}
+                            </span>
+                          ) : (
+                            <FaUserAlt className="text-lg text-white" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-medium text-white">{user.data?.name}</div>
+                          <div className="text-xs text-gray-300">{user.data?.email}</div>
+                        </div>
+                      </div>
+                      <Link to="/cart" className="relative">
+                        <FaShoppingCart className="text-xl text-white" />
+                        {cartItems.length > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-secondary-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                            {cartItems.length}
+                          </span>
+                        )}
+                      </Link>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      {user && <CartIcon />}
-                      <button onClick={onLogout} className="flex items-center space-x-1 text-red-400">
-                        <FaSignOutAlt />
-                        <span>Logout</span>
+                    
+                    <div className="space-y-1">
+                      <Link
+                        to="/profile"
+                        className="block w-full text-left px-3 py-2 rounded-md text-white hover:bg-primary-700/50 transition duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        My Profile
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="block w-full text-left px-3 py-2 rounded-md text-white hover:bg-primary-700/50 transition duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        My Orders
+                      </Link>
+                      {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
+                        <Link
+                          to="/dashboard"
+                          className="block w-full text-left px-3 py-2 rounded-md text-white hover:bg-primary-700/50 transition duration-300"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Dashboard
+                        </Link>
+                      ) : null}
+                      <button
+                        onClick={() => {
+                          onLogout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-3 py-2 rounded-md text-white hover:bg-red-600/80 transition duration-300 mt-2"
+                      >
+                        Logout
                       </button>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <div className="flex space-x-4 w-full">
+                  <div className="flex flex-col space-y-2">
                     <Link 
                       to="/login" 
-                      className="flex items-center justify-center space-x-1 bg-primary-700 hover:bg-primary-600 w-1/2 py-2 rounded transition duration-300"
+                      className="block w-full text-center px-4 py-2 text-white hover:bg-primary-700/50 rounded-md transition duration-300"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <FaSignInAlt />
-                      <span>Login</span>
+                      <FaSignInAlt className="inline-block mr-2" />
+                      Login
                     </Link>
                     <Link 
                       to="/register" 
-                      className="flex items-center justify-center space-x-1 bg-secondary-600 hover:bg-secondary-500 w-1/2 py-2 rounded transition duration-300"
+                      className="block w-full text-center px-4 py-2 text-white bg-secondary-600 hover:bg-secondary-500 rounded-md transition duration-300"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <FaUserPlus />
-                      <span>Register</span>
+                      <FaUserPlus className="inline-block mr-2" />
+                      Register
                     </Link>
                   </div>
                 )}
               </div>
-              
-              {user && (
-                <div className="space-y-3 border-b border-primary-700 pb-3">
-                  <Link 
-                    to="/profile" 
-                    className="block hover:text-secondary-400"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Profile
-                  </Link>
-                  <Link 
-                    to="/orders" 
-                    className="block hover:text-secondary-400"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Orders
-                  </Link>
-                  <Link 
-                    to="/cart" 
-                    className="block hover:text-secondary-400"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Cart
-                  </Link>
-                  {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
-                    <Link
-                      to="/dashboard"
-                      className="block hover:text-secondary-400"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  ) : null}
-                </div>
-              )}
             </div>
           </div>
         )}

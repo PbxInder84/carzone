@@ -15,6 +15,11 @@
   "license": "MIT",
   "dependencies": {
     "concurrently": "^8.2.2",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "react-colorful": "^5.6.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.6.2"
   }
-} 
+}

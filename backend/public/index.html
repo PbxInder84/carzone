@@ -3,9 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>carzone</title>
+    <meta name="description" content="Carzone - Premium Car Accessories E-commerce Platform">
+    <meta name="keywords" content="car accessories, auto parts, car electronics, car care, automotive">
+    <title>Carzone - Car Accessories E-commerce</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --primary: #0f4c81;
+            --secondary: #ff6b35;
+            --light: #f5f5f5;
+            --dark: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+        
+        .api-status {
+            background-color: white;
+            color: var(--dark);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .endpoints {
+            text-align: left;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .endpoint {
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        code {
+            background-color: #f1f1f1;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            color: #777;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-    <h1>carzone</h1>
+    <header>
+        <div class="container">
+            <div class="logo">Carzone</div>
+            <div class="tagline">Premium Car Accessories E-commerce Platform</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="api-status">
+            <h2><span class="status-indicator"></span> API Server Running</h2>
+            <p>Carzone API server is running correctly. The API is ready to handle requests.</p>
+        </div>
+        
+        <div class="endpoints">
+            <h2>Available API Endpoints</h2>
+            <div class="endpoint">
+                <p><code>GET /api/health</code> - Server health check</p>
+            </div>
+            <div class="endpoint">
+                <p><code>POST /api/auth/login</code> - User authentication</p>
+            </div>
+            <div class="endpoint">
+                <p><code>GET /api/products</code> - Get all products</p>
+            </div>
+            <div class="endpoint">
+                <p><code>GET /api/categories</code> - Get all categories</p>
+            </div>
+            <p>For full API documentation, please refer to the API documentation.</p>
+        </div>
+        
+        <footer>
+            &copy; <span id="year"></span> Carzone. All rights reserved.
+            <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+        </footer>
+    </div>
 </body>
 </html>

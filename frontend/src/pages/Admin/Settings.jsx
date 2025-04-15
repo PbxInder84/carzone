@@ -1,135 +1,234 @@
 import React, { useState, useEffect } from 'react';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { FaSave, FaTimes, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import Spinner from '../../components/common/Spinner';
+import Spinner from '../../components/layout/Spinner';
+import SettingsGroup from '../../components/settings/SettingsGroup';
+import { 
+  getSettings, 
+  updateMultipleSettings, 
+  initSettings 
+} from '../../features/settings/settingsSlice';
+
+const titleCaseGroup = (group) => {
+  return group.split('_').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
+};
+
+const groupDescriptions = {
+  general: 'Basic information about your store',
+  appearance: 'Customize the look and feel of your store',
+  contact: 'Contact information displayed to customers',
+  commerce: 'Shipping, tax, and payment settings',
+  features: 'Enable or disable site features',
+};
 
 const Settings = () => {
-  const [settings, setSettings] = useState({
-    site_name: '',
-    logo_url: '',
-    primary_color: '#2563eb',
-    secondary_color: '#475569',
-    banner_image: '',
-    contact_email: '',
-    contact_phone: '',
-    address: '',
-    social_media: {
-      facebook: '',
-      twitter: '',
-      instagram: ''
-    },
-    tax_rate: 0,
-    shipping_fee: 0,
-    free_shipping_threshold: 0,
-    currency: 'USD',
-    features_enabled: {
-      reviews: true,
-      wishlists: true,
-      comparison: true,
-      live_chat: false,
-      newsletter: true
-    }
-  });
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  
+  const { settings, isLoading, isError, message } = useSelector(
+    (state) => state.settings
+  );
+  
+  const [localSettings, setLocalSettings] = useState({});
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
 
+  // Load settings on component mount
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    dispatch(getSettings());
+  }, [dispatch]);
 
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      // Fetch site settings from DB or API
-      // For this example, we'll use a mock fetch that returns after a delay
-      setTimeout(() => {
-        setSettings({
-          site_name: 'CarZone',
-          logo_url: '/assets/images/logo.png',
-          primary_color: '#2563eb',
-          secondary_color: '#475569',
-          banner_image: '/assets/images/banner.jpg',
-          contact_email: 'support@carzone.com',
-          contact_phone: '+1-555-123-4567',
-          address: '123 Auto Street, Vehicle City, CA 90000',
-          social_media: {
-            facebook: 'https://facebook.com/carzone',
-            twitter: 'https://twitter.com/carzone',
-            instagram: 'https://instagram.com/carzone'
-          },
-          tax_rate: 7.5,
-          shipping_fee: 15.00,
-          free_shipping_threshold: 150.00,
-          currency: 'USD',
-          features_enabled: {
-            reviews: true,
-            wishlists: true,
-            comparison: true,
-            live_chat: false,
-            newsletter: true
-          }
-        });
-        setLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Error fetching settings:', error);
-      toast.error('Failed to load settings');
-      setLoading(false);
+  // Update local settings when Redux settings change
+  useEffect(() => {
+    if (settings && Object.keys(settings).length > 0) {
+      setLocalSettings(settings);
     }
+  }, [settings]);
+
+  // Validate settings
+  const validateSettings = () => {
+    const newErrors = {};
+    let isValid = true;
+
+    // Loop through all settings
+    Object.keys(localSettings).forEach(group => {
+      const groupSettings = localSettings[group];
+      
+      Object.keys(groupSettings).forEach(key => {
+        const setting = groupSettings[key];
+        const value = setting.value;
+        
+        // Required validation
+        if (value === undefined || value === null || value === '') {
+          newErrors[key] = 'This field is required';
+          isValid = false;
+        }
+        
+        // Type-specific validation
+        switch (setting.type) {
+          case 'number':
+            if (isNaN(parseFloat(value))) {
+              newErrors[key] = 'Must be a valid number';
+              isValid = false;
+            }
+            break;
+          case 'json':
+            if (typeof value === 'string') {
+              try {
+                JSON.parse(value);
+              } catch (error) {
+                newErrors[key] = 'Must be valid JSON';
+                isValid = false;
+              }
+            }
+            break;
+          case 'color':
+            if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(value)) {
+              newErrors[key] = 'Must be a valid hex color';
+              isValid = false;
+            }
+            break;
+          default:
+            // No additional validation for other types
+            break;
+        }
+      });
+    });
+
+    setErrors(newErrors);
+    return isValid;
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  // Handle setting change
+  const handleSettingChange = (key, value, type) => {
+    setHasChanges(true);
     
-    if (type === 'checkbox') {
-      setSettings({
-        ...settings,
-        features_enabled: {
-          ...settings.features_enabled,
-          [name]: checked
+    // Find which group contains this key
+    let targetGroup = null;
+    Object.keys(localSettings).forEach(group => {
+      if (localSettings[group] && localSettings[group][key]) {
+        targetGroup = group;
+      }
+    });
+    
+    if (targetGroup) {
+      setLocalSettings({
+        ...localSettings,
+        [targetGroup]: {
+          ...localSettings[targetGroup],
+          [key]: {
+            ...localSettings[targetGroup][key],
+            value: value
+          }
         }
       });
-    } else if (name.includes('social_media.')) {
-      const socialKey = name.split('.')[1];
-      setSettings({
-        ...settings,
-        social_media: {
-          ...settings.social_media,
-          [socialKey]: value
-        }
-      });
-    } else if (type === 'number') {
-      setSettings({
-        ...settings,
-        [name]: parseFloat(value)
-      });
-    } else {
-      setSettings({
-        ...settings,
-        [name]: value
-      });
+      
+      // Clear any error for this field
+      if (errors[key]) {
+        setErrors({
+          ...errors,
+          [key]: undefined
+        });
+      }
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate settings
+    if (!validateSettings()) {
+      toast.error('Please fix the errors before saving');
+      return;
+    }
+    
     setSaving(true);
     
     try {
-      // Save settings to DB or API
-      // For this example, we'll simulate a successful save after a delay
-      setTimeout(() => {
-        toast.success('Settings saved successfully');
-        setSaving(false);
-      }, 1000);
+      // Prepare settings for update
+      const settingsToUpdate = {};
+      
+      // Log local settings before preparing update
+      console.log('Local settings before update:', localSettings);
+      
+      Object.keys(localSettings).forEach(group => {
+        const groupSettings = localSettings[group];
+        
+        Object.keys(groupSettings).forEach(key => {
+          // Handling JSON values
+          let value = groupSettings[key].value;
+          const type = groupSettings[key].type;
+          
+          // Make sure JSON values are properly formatted
+          if (type === 'json' && typeof value === 'object') {
+            // It's already an object, no need to parse
+            settingsToUpdate[key] = value;
+          } else if (type === 'json' && typeof value === 'string') {
+            try {
+              // Try to parse string to ensure it's valid JSON
+              const parsedValue = JSON.parse(value);
+              settingsToUpdate[key] = parsedValue;
+            } catch (error) {
+              console.error(`Invalid JSON for key ${key}:`, value);
+              // Use the original value if parsing fails
+              settingsToUpdate[key] = value;
+            }
+          } else {
+            // For other types, just use the value directly
+            settingsToUpdate[key] = value;
+          }
+        });
+      });
+      
+      // Log what we're about to send to the API
+      console.log('Settings to update:', settingsToUpdate);
+      
+      // Dispatch update action
+      const result = await dispatch(updateMultipleSettings(settingsToUpdate)).unwrap();
+      console.log('Update settings result:', result);
+      
+      // Refresh settings to ensure we have the latest data
+      await dispatch(getSettings());
+      
+      setHasChanges(false);
+      toast.success('Settings saved successfully');
     } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      console.error('Settings update error:', error);
+      const errorMessage = error?.response?.data?.message || error.message || 'Unknown error occurred';
+      toast.error(`Failed to save settings: ${errorMessage}`);
+    } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  // Handle reset
+  const handleReset = () => {
+    dispatch(getSettings());
+    setHasChanges(false);
+    setErrors({});
+  };
+  
+  // Handle initialization of default settings
+  const handleInitialize = async () => {
+    if (window.confirm('This will reset all settings to default values. Are you sure?')) {
+      try {
+        setSaving(true);
+        await dispatch(initSettings()).unwrap();
+        await dispatch(getSettings());
+        toast.success('Settings initialized successfully');
+      } catch (error) {
+        toast.error('Failed to initialize settings: ' + error.message);
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  if (isLoading && !Object.keys(localSettings).length) {
     return <Spinner />;
   }
 
@@ -137,344 +236,85 @@ const Settings = () => {
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Site Settings</h1>
-      </div>
-
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-medium mb-4">General Settings</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Site Name
-              </label>
-              <input
-                type="text"
-                name="site_name"
-                value={settings.site_name}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Logo URL
-              </label>
-              <input
-                type="text"
-                name="logo_url"
-                value={settings.logo_url}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Primary Color
-              </label>
-              <div className="flex">
-                <input
-                  type="color"
-                  name="primary_color"
-                  value={settings.primary_color}
-                  onChange={handleInputChange}
-                  className="h-10 w-10 border rounded mr-2"
-                />
-                <input
-                  type="text"
-                  name="primary_color"
-                  value={settings.primary_color}
-                  onChange={handleInputChange}
-                  className="border rounded-lg px-3 py-2 flex-1"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Secondary Color
-              </label>
-              <div className="flex">
-                <input
-                  type="color"
-                  name="secondary_color"
-                  value={settings.secondary_color}
-                  onChange={handleInputChange}
-                  className="h-10 w-10 border rounded mr-2"
-                />
-                <input
-                  type="text"
-                  name="secondary_color"
-                  value={settings.secondary_color}
-                  onChange={handleInputChange}
-                  className="border rounded-lg px-3 py-2 flex-1"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Banner Image URL
-              </label>
-              <input
-                type="text"
-                name="banner_image"
-                value={settings.banner_image}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Currency
-              </label>
-              <select
-                name="currency"
-                value={settings.currency}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              >
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="CAD">CAD (C$)</option>
-                <option value="AUD">AUD (A$)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-medium mb-4">Contact Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Email
-              </label>
-              <input
-                type="email"
-                name="contact_email"
-                value={settings.contact_email}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Phone
-              </label>
-              <input
-                type="text"
-                name="contact_phone"
-                value={settings.contact_phone}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
-              </label>
-              <textarea
-                name="address"
-                value={settings.address}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-                rows="2"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-medium mb-4">Social Media</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Facebook
-              </label>
-              <input
-                type="url"
-                name="social_media.facebook"
-                value={settings.social_media.facebook}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Twitter
-              </label>
-              <input
-                type="url"
-                name="social_media.twitter"
-                value={settings.social_media.twitter}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Instagram
-              </label>
-              <input
-                type="url"
-                name="social_media.instagram"
-                value={settings.social_media.instagram}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-medium mb-4">Shipping & Taxes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tax Rate (%)
-              </label>
-              <input
-                type="number"
-                name="tax_rate"
-                value={settings.tax_rate}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-                step="0.1"
-                min="0"
-                max="100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Shipping Fee
-              </label>
-              <input
-                type="number"
-                name="shipping_fee"
-                value={settings.shipping_fee}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-                step="0.01"
-                min="0"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Free Shipping Threshold
-              </label>
-              <input
-                type="number"
-                name="free_shipping_threshold"
-                value={settings.free_shipping_threshold}
-                onChange={handleInputChange}
-                className="border rounded-lg px-3 py-2 w-full"
-                step="0.01"
-                min="0"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border-b">
-          <h2 className="text-lg font-medium mb-4">Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="reviews"
-                name="reviews"
-                checked={settings.features_enabled.reviews}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <label htmlFor="reviews" className="ml-2 text-sm text-gray-700">
-                Enable Reviews
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="wishlists"
-                name="wishlists"
-                checked={settings.features_enabled.wishlists}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <label htmlFor="wishlists" className="ml-2 text-sm text-gray-700">
-                Enable Wishlists
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="comparison"
-                name="comparison"
-                checked={settings.features_enabled.comparison}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <label htmlFor="comparison" className="ml-2 text-sm text-gray-700">
-                Enable Product Comparison
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="live_chat"
-                name="live_chat"
-                checked={settings.features_enabled.live_chat}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <label htmlFor="live_chat" className="ml-2 text-sm text-gray-700">
-                Enable Live Chat
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="newsletter"
-                name="newsletter"
-                checked={settings.features_enabled.newsletter}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 rounded"
-              />
-              <label htmlFor="newsletter" className="ml-2 text-sm text-gray-700">
-                Enable Newsletter
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 flex justify-end space-x-3">
+        
+        <div className="flex space-x-3">
           <button
             type="button"
-            onClick={() => fetchSettings()}
-            className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center"
+            onClick={handleInitialize}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
             disabled={saving}
           >
-            <FaTimes className="mr-2" /> Reset
-          </button>
-          <button
-            type="submit"
-            className="bg-primary-600 text-white px-4 py-2 rounded-lg flex items-center"
-            disabled={saving}
-          >
-            {saving ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <FaSave className="mr-2" /> Save Settings
-              </>
-            )}
+            <FaSync className="mr-2" /> Initialize Default Settings
           </button>
         </div>
+      </div>
+      
+      {isError && (
+        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-md mb-6">
+          <h3 className="text-lg font-medium">Error loading settings</h3>
+          <p>{message}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        {Object.keys(localSettings).length > 0 ? (
+          <>
+            {Object.keys(localSettings).map((group) => (
+              <SettingsGroup
+                key={group}
+                title={titleCaseGroup(group)}
+                description={groupDescriptions[group] || ''}
+                settings={localSettings[group]}
+                onSettingChange={handleSettingChange}
+                isDisabled={saving}
+                errors={errors}
+                defaultExpanded={true}
+              />
+            ))}
+            
+            <div className="p-6 flex justify-end space-x-3 sticky bottom-0 bg-white shadow-md rounded-lg">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center"
+                disabled={saving || !hasChanges}
+              >
+                <FaTimes className="mr-2" /> Reset
+              </button>
+              <button
+                type="submit"
+                className="bg-primary-600 text-white px-4 py-2 rounded-lg flex items-center"
+                disabled={saving || !hasChanges}
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <FaSave className="mr-2" /> Save Settings
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="bg-white p-8 rounded-lg shadow text-center">
+            <p className="text-gray-500 mb-4">No settings found. Initialize default settings to get started.</p>
+            <button
+              type="button"
+              onClick={handleInitialize}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center mx-auto"
+              disabled={saving}
+            >
+              <FaSync className="mr-2" /> Initialize Settings
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

@@ -2,36 +2,46 @@ const logger = require('../utils/logger');
 
 /**
  * Middleware to log detailed request information
- * Useful for debugging but can be disabled in production for performance
  */
 const requestLogger = (req, res, next) => {
-  // Only log detailed requests in development mode or if explicitly enabled
-  if (process.env.NODE_ENV !== 'development' && process.env.DETAILED_LOGGING !== 'true') {
+  // Only log in development, or when explicitly enabled
+  if (process.env.NODE_ENV !== 'development' && !process.env.ENABLE_REQUEST_LOGGING) {
     return next();
   }
 
-  // Create a sanitized copy of headers (remove sensitive data)
-  const sanitizedHeaders = { ...req.headers };
-  
-  // Remove sensitive authentication information if present
-  if (sanitizedHeaders.authorization) {
-    sanitizedHeaders.authorization = 'REDACTED';
-  }
-  if (sanitizedHeaders.cookie) {
-    sanitizedHeaders.cookie = 'REDACTED';
-  }
-  
-  // Log request details
-  logger.debug('Request details', {
-    method: req.method,
-    url: req.originalUrl,
-    ip: req.ip,
-    headers: sanitizedHeaders,
+  const start = new Date();
+
+  // Log the request
+  logger.debug(`REQUEST: ${req.method} ${req.originalUrl}`, {
+    body: JSON.stringify(req.body),
+    params: req.params,
     query: req.query,
-    // Don't log body in production to avoid logging sensitive data
-    body: process.env.NODE_ENV === 'development' ? req.body : 'REDACTED'
+    headers: {
+      'user-agent': req.headers['user-agent'],
+      'content-type': req.headers['content-type'],
+      'content-length': req.headers['content-length'],
+      authorization: req.headers.authorization 
+        ? (req.headers.authorization.startsWith('Bearer') 
+          ? 'Bearer [TOKEN]' 
+          : 'PRESENT') 
+        : 'NONE'
+    },
+    ip: req.ip
   });
-  
+
+  // Create response interceptor to log response
+  const originalSend = res.send;
+  res.send = function(body) {
+    const responseTime = new Date() - start;
+    
+    logger.debug(`RESPONSE: ${req.method} ${req.originalUrl} ${res.statusCode} (${responseTime}ms)`, {
+      responseSize: body ? body.length : 0,
+      responseStatus: res.statusCode
+    });
+    
+    originalSend.call(this, body);
+  };
+
   next();
 };
 

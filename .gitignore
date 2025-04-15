@@ -1,6 +1,61 @@
-node_modules
+# Dependencies
+node_modules/
 /uploads
-.env
+/.pnp
+.pnp.js
 
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env.example
-logs
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+combined.log
+error.log
+exceptions.log
+*-audit.json
+
+# Database
+/migrations/
+/backend/migrations/
+/backend/scripts/
+*migration*.js
+
+# Testing
+/coverage
+__tests__/
+*.test.js
+*.spec.js
+/test
+jest.config.js
+setupTests.js
+
+# Production build
+/build
+/dist
+
+# IDE and editors
+/.idea
+/.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Misc
+.cache/
+.temp/

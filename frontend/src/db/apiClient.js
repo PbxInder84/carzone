@@ -4,9 +4,16 @@ import axios from 'axios';
 const requestCache = {};
 const CACHE_TIMEOUT = 5000; // 5 seconds
 
+// Get the API base URL from the environment or use relative path
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? '/api' 
+  : process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+console.log('API Client initialized with baseURL:', baseURL);
+
 // Create axios instance
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -17,6 +24,8 @@ const apiClient = axios.create({
 // Add a request interceptor to add the auth token to requests
 apiClient.interceptors.request.use(
   (config) => {
+    console.log(`Making ${config.method.toUpperCase()} request to: ${config.url}`, config.data || config.params);
+    
     // Check if this is a GET request that could be cached
     if (config.method === 'get') {
       const cacheKey = `${config.url}${JSON.stringify(config.params || {})}`;
@@ -27,7 +36,13 @@ apiClient.interceptors.request.use(
         // Return cached promise to avoid duplicate requests
         const cachedResponse = requestCache[cacheKey].response;
         console.log(`Using cached response for ${config.url}`);
-        return Promise.resolve(cachedResponse);
+        
+        // Return a Promise rejected with a special flag to indicate it was handled by cache
+        return Promise.reject({
+          config,
+          cachedResponse,
+          isFromCache: true
+        });
       }
     }
     
@@ -54,6 +69,8 @@ apiClient.interceptors.request.use(
 // Add a response interceptor to handle common response issues and cache responses
 apiClient.interceptors.response.use(
   (response) => {
+    console.log(`Received response from ${response.config.url}:`, response.status);
+    
     // Cache successful GET responses
     if (response.config.method === 'get') {
       const cacheKey = `${response.config.url}${JSON.stringify(response.config.params || {})}`;
@@ -65,6 +82,14 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Check if this is a rejection due to cache hit
+    if (error.isFromCache) {
+      return error.cachedResponse;
+    }
+    
+    // Log the error
+    console.error('API request error:', error.response?.status, error.message);
+    
     // Handle unauthorized errors (401)
     if (error.response && error.response.status === 401) {
       // Clear local storage and redirect to login if token expired
