@@ -79,28 +79,28 @@ const DashboardLayout = () => {
   });
   
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-background">
       {/* Sidebar - Desktop */}
       <aside 
-        className={`hidden md:flex flex-col bg-primary-800 text-white transition-all duration-300 ${
+        className={`hidden md:flex flex-col bg-slate-800 text-white transition-all duration-300 ${
           sidebarOpen ? 'w-64' : 'w-20'
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-primary-700">
+        <div className="flex items-center justify-between p-4 border-b border-slate-700">
           {sidebarOpen ? (
             <Link to="/" className="flex items-center space-x-2">
-              <FaCar className="text-secondary-400 text-2xl" />
-              <span className="text-xl font-bold">CarZone</span>
+              <FaCar className="text-highlight-500 text-2xl" />
+              <span className="text-xl font-bold font-poppins">CarZone</span>
             </Link>
           ) : (
             <Link to="/" className="mx-auto">
-              <FaCar className="text-secondary-400 text-2xl" />
+              <FaCar className="text-highlight-500 text-2xl" />
             </Link>
           )}
           <button 
             onClick={toggleSidebar}
-            className="text-white hover:text-secondary-400 focus:outline-none"
+            className="text-white hover:text-highlight-500 focus:outline-none"
           >
             {sidebarOpen ? <FaChevronLeft /> : <FaChevronRight />}
           </button>
@@ -116,13 +116,13 @@ const DashboardLayout = () => {
                   className={({ isActive }) => 
                     `flex items-center py-3 px-4 transition-colors ${
                       isActive 
-                        ? 'bg-primary-700 text-secondary-400' 
-                        : 'text-white hover:bg-primary-700'
+                        ? 'bg-slate-700 text-highlight-500 border-l-4 border-highlight-500' 
+                        : 'text-white hover:bg-slate-700 border-l-4 border-transparent'
                     }`
                   }
                 >
                   <span className="text-lg">{item.icon}</span>
-                  {sidebarOpen && <span className="ml-3">{item.label}</span>}
+                  {sidebarOpen && <span className="ml-3 font-medium">{item.label}</span>}
                 </NavLink>
               </li>
             ))}
@@ -130,12 +130,12 @@ const DashboardLayout = () => {
         </nav>
         
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-primary-700">
+        <div className="p-4 border-t border-slate-700">
           {sidebarOpen ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="h-8 w-8 rounded-full bg-primary-700 flex items-center justify-center">
-                  <FaUsers className="text-secondary-400" />
+                <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                  <FaUsers className="text-white" />
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium">{user?.data?.name || 'User'}</p>
@@ -144,7 +144,7 @@ const DashboardLayout = () => {
               </div>
               <button 
                 onClick={handleLogout}
-                className="text-white hover:text-secondary-400"
+                className="text-white hover:text-highlight-500 transition-colors"
                 title="Logout"
               >
                 <FaSignOutAlt />
@@ -152,12 +152,12 @@ const DashboardLayout = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-4">
-              <div className="h-8 w-8 rounded-full bg-primary-700 flex items-center justify-center">
-                <FaUsers className="text-secondary-400" />
+              <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                <FaUsers className="text-white" />
               </div>
               <button 
                 onClick={handleLogout}
-                className="text-white hover:text-secondary-400"
+                className="text-white hover:text-highlight-500 transition-colors"
                 title="Logout"
               >
                 <FaSignOutAlt />
@@ -177,25 +177,25 @@ const DashboardLayout = () => {
       
       {/* Sidebar - Mobile */}
       <aside 
-        className={`fixed md:hidden inset-y-0 left-0 z-30 w-64 bg-primary-800 text-white transform ${
+        className={`fixed md:hidden inset-y-0 left-0 z-30 w-64 bg-slate-800 text-white transform ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-primary-700">
+        <div className="flex items-center justify-between p-4 border-b border-slate-700">
           <Link to="/" className="flex items-center space-x-2">
-            <FaCar className="text-secondary-400 text-2xl" />
-            <span className="text-xl font-bold">CarZone</span>
+            <FaCar className="text-highlight-500 text-2xl" />
+            <span className="text-xl font-bold font-poppins">CarZone</span>
           </Link>
           <button 
             onClick={() => setMobileMenuOpen(false)}
-            className="text-white hover:text-secondary-400 focus:outline-none"
+            className="text-white hover:text-highlight-500 focus:outline-none"
           >
             <FaTimes />
           </button>
         </div>
         
-        {/* Sidebar Navigation */}
+        {/* Sidebar Navigation for Mobile - similar styling to desktop */}
         <nav className="flex-grow py-4">
           <ul className="space-y-1">
             {filteredNavItems.map((item) => (
@@ -205,26 +205,26 @@ const DashboardLayout = () => {
                   className={({ isActive }) => 
                     `flex items-center py-3 px-4 transition-colors ${
                       isActive 
-                        ? 'bg-primary-700 text-secondary-400' 
-                        : 'text-white hover:bg-primary-700'
+                        ? 'bg-slate-700 text-highlight-500 border-l-4 border-highlight-500' 
+                        : 'text-white hover:bg-slate-700 border-l-4 border-transparent'
                     }`
                   }
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <span className="text-lg">{item.icon}</span>
-                  <span className="ml-3">{item.label}</span>
+                  <span className="ml-3 font-medium">{item.label}</span>
                 </NavLink>
               </li>
             ))}
           </ul>
         </nav>
         
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-primary-700">
+        {/* Mobile Sidebar Footer */}
+        <div className="p-4 border-t border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-primary-700 flex items-center justify-center">
-                <FaUsers className="text-secondary-400" />
+              <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                <FaUsers className="text-white" />
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium">{user?.data?.name || 'User'}</p>
@@ -233,7 +233,7 @@ const DashboardLayout = () => {
             </div>
             <button 
               onClick={handleLogout}
-              className="text-white hover:text-secondary-400"
+              className="text-white hover:text-highlight-500"
               title="Logout"
             >
               <FaSignOutAlt />
@@ -243,37 +243,26 @@ const DashboardLayout = () => {
       </aside>
       
       {/* Main Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white shadow-sm">
-          <div className="px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center">
-              {/* Mobile Menu Toggle */}
-              <button 
-                className="md:hidden mr-4 text-gray-600 hover:text-primary-600 focus:outline-none"
-                onClick={() => setMobileMenuOpen(true)}
-              >
-                <FaBars className="text-xl" />
-              </button>
-              
-              <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/"
-                className="text-sm flex items-center text-primary-600 hover:text-primary-800"
-              >
-                <span>Back to site</span>
-                <FaChevronRight className="ml-1" />
-              </Link>
-            </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Navigation - Mobile Only */}
+        <header className="md:hidden bg-surface shadow-sm z-10">
+          <div className="flex items-center justify-between p-4">
+            <button
+              className="text-slate-800 hover:text-primary-600 focus:outline-none"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <FaBars />
+            </button>
+            <h1 className="text-lg font-bold text-slate-800 font-poppins">Dashboard</h1>
+            <div className="w-6"></div>
           </div>
         </header>
         
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto bg-background p-4">
+          <div className="container mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

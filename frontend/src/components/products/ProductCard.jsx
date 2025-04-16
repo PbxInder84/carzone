@@ -58,10 +58,10 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="group relative overflow-hidden backdrop-blur-sm bg-white/90 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="car-card group relative overflow-hidden bg-white rounded-card shadow-card border border-soft-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* Sale badge */}
       {product.discount_percent > 0 && (
-        <div className="absolute top-3 left-3 z-10 bg-secondary-500 text-white text-xs font-bold py-1 px-2 rounded-full">
+        <div className="absolute top-3 left-3 z-10 bg-highlight-500 text-white text-xs font-bold py-1 px-2 rounded-md">
           {product.discount_percent}% OFF
         </div>
       )}
@@ -69,17 +69,17 @@ const ProductCard = ({ product }) => {
       {/* Stock indicator */}
       <div className="absolute top-3 right-3 z-10">
         {product.stock_quantity > 10 ? (
-          <span className="bg-green-100 text-green-700 text-xs py-1 px-2 rounded-full flex items-center">
+          <span className="bg-green-100 text-green-800 text-xs py-1 px-2 rounded-md flex items-center">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block mr-1"></span>
             In Stock
           </span>
         ) : product.stock_quantity > 0 ? (
-          <span className="bg-amber-100 text-amber-700 text-xs py-1 px-2 rounded-full flex items-center">
+          <span className="bg-amber-100 text-amber-800 text-xs py-1 px-2 rounded-md flex items-center">
             <span className="w-1.5 h-1.5 bg-amber-500 rounded-full inline-block mr-1"></span>
             Low Stock
           </span>
         ) : (
-          <span className="bg-red-100 text-red-700 text-xs py-1 px-2 rounded-full flex items-center">
+          <span className="bg-red-100 text-red-800 text-xs py-1 px-2 rounded-md flex items-center">
             <span className="w-1.5 h-1.5 bg-red-500 rounded-full inline-block mr-1"></span>
             Out of Stock
           </span>
@@ -89,13 +89,13 @@ const ProductCard = ({ product }) => {
       {/* Quick action buttons - visible on hover */}
       <div className="absolute right-3 top-1/3 transform -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col gap-2">
         <button 
-          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors duration-300"
+          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 transition-colors duration-300"
           title="Add to Wishlist"
         >
           <FaHeart className="text-sm" />
         </button>
         <button 
-          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors duration-300"
+          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 transition-colors duration-300"
           title="Quick View"
         >
           <FaEye className="text-sm" />
@@ -103,9 +103,9 @@ const ProductCard = ({ product }) => {
       </div>
       
       {/* Product Image with overlay on hover */}
-      <div className="relative overflow-hidden h-48 sm:h-56">
+      <div className="car-card-image relative overflow-hidden h-48 sm:h-56">
         <Link to={`/product/${product.id}`}>
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <img 
             src={product.image_url || 'https://via.placeholder.com/300'} 
             alt={product.name}
@@ -115,23 +115,23 @@ const ProductCard = ({ product }) => {
       </div>
       
       {/* Product Info */}
-      <div className="p-4">
+      <div className="car-card-content p-4">
         {/* Category */}
         {product.category && (
-          <Link to={`/products?category=${product.category.id}`} className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+          <Link to={`/products?category=${product.category.id}`} className="text-xs text-highlight-500 hover:text-highlight-600 font-medium">
             {product.category.name}
           </Link>
         )}
         
         {/* Product Name */}
         <Link to={`/product/${product.id}`} className="block mt-1">
-          <h3 className="text-lg font-medium text-gray-800 hover:text-primary-600 transition-colors duration-300 line-clamp-1">
+          <h3 className="text-lg font-medium text-slate-800 hover:text-highlight-500 transition-colors duration-300 line-clamp-1 font-poppins">
             {product.name}
           </h3>
         </Link>
         
         {/* Description - limited to 2 lines */}
-        <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+        <p className="mt-1 text-sm text-slate-600 line-clamp-2">
           {product.description}
         </p>
         
@@ -140,7 +140,7 @@ const ProductCard = ({ product }) => {
           <div className="flex">
             {renderStars()}
           </div>
-          <span className="ml-1 text-xs text-gray-500">
+          <span className="ml-1 text-xs text-slate-600">
             ({product.reviews ? product.reviews.length : 0})
           </span>
         </div>
@@ -149,21 +149,21 @@ const ProductCard = ({ product }) => {
         <div className="flex items-center space-x-2 mb-4">
           {product.discount_percent > 0 ? (
             <>
-              <span className="text-lg font-bold text-primary-600">
+              <span className="price text-highlight-500">
                 {formatCurrency((parseFloat(product.price || 0) * (1 - product.discount_percent / 100)))}
               </span>
-              <span className="text-sm text-gray-500 line-through">
+              <span className="text-sm text-slate-500 line-through">
                 {formatCurrency(parseFloat(product.price || 0))}
               </span>
             </>
           ) : (
-            <span className="text-lg font-bold text-primary-600">
+            <span className="price text-highlight-500">
               {formatCurrency(parseFloat(product.price || 0))}
             </span>
           )}
         </div>
         
-        {/* Price and Add to Cart */}
+        {/* Add to Cart */}
         <div className="mt-3 flex items-center justify-between">
           <button
             onClick={handleAddToCart}
@@ -171,12 +171,19 @@ const ProductCard = ({ product }) => {
             className={`${
               product.stock_quantity === 0
                 ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-primary-600 hover:bg-primary-700'
-            } text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md transform transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
+                : 'bg-highlight-500 hover:bg-highlight-600 hover:scale-[1.02]'
+            } text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-highlight-400/50`}
             title={product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
           >
             <FaShoppingCart />
           </button>
+          
+          <Link 
+            to={`/product/${product.id}`}
+            className="text-highlight-500 hover:text-highlight-600 font-medium text-sm hover:underline"
+          >
+            View Details
+          </Link>
         </div>
       </div>
     </div>

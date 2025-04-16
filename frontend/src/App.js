@@ -32,6 +32,7 @@ import UserOrderDetail from './pages/Profile/OrderDetail';
 import PolicyPage from './pages/PolicyPage';
 import NotFound from './pages/NotFound';
 import Debug from './pages/Debug';
+import ThemeDemo from './components/ThemeDemo';
 
 // Layout component with header and footer
 const Layout = () => {
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "contact", element: <Contact /> },
       { path: "debug", element: <Debug /> },
+      { path: "theme", element: <ThemeDemo /> },
       
       // Policy Pages
       { path: "privacy-policy", element: <PolicyPage type="privacy" /> },
