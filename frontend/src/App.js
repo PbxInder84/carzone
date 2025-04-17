@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import { SettingsProvider } from './components/layout/SettingsContext';
+import { ThemeProvider } from './components/layout/ThemeContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -26,6 +27,7 @@ import AdminOrders from './pages/Admin/Orders';
 import AdminUsers from './pages/Admin/Users';
 import AdminSettings from './pages/Admin/Settings';
 import AdminCategories from './pages/Admin/Categories';
+import BulkImport from './pages/Admin/BulkImport';
 import ProductForm from './pages/Admin/Products/ProductForm';
 import OrderDetail from './pages/Admin/OrderDetail';
 import UserOrderDetail from './pages/Profile/OrderDetail';
@@ -52,13 +54,15 @@ const Layout = () => {
 
 // Create router with direct route objects instead of JSX syntax
 const router = createBrowserRouter([
+  // Auth routes without header and footer
+  { path: "login", element: <Login /> },
+  { path: "register", element: <Register /> },
+  
   {
     path: "/",
     element: <Layout />,
     children: [
       { index: true, element: <Home /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
       { path: "products", element: <Products /> },
       { path: "products/:id", element: <ProductDetail /> },
       { path: "product/:id", element: <ProductDetail /> },
@@ -114,7 +118,8 @@ const router = createBrowserRouter([
           {
             element: <ProtectedRoute allowedRoles={['admin']} />,
             children: [
-              { path: "users", element: <AdminUsers /> }
+              { path: "users", element: <AdminUsers /> },
+              { path: "bulk-import", element: <BulkImport /> }
             ]
           },
           
@@ -153,10 +158,12 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <SettingsProvider>
-      <RouterProvider router={router} />
-      <ToastContainer position="top-right" autoClose={3000} />
-    </SettingsProvider>
+    <ThemeProvider>
+      <SettingsProvider>
+        <RouterProvider router={router} />
+        <ToastContainer position="top-right" autoClose={3000} />
+      </SettingsProvider>
+    </ThemeProvider>
   );
 }
 

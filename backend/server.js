@@ -25,6 +25,8 @@ const cartRoutes = require('./routes/cart');
 const userRoutes = require('./routes/users');
 const checkoutRoutes = require('./routes/checkout');
 const settingsRoutes = require('./routes/settings');
+const bulkRoutes = require('./routes/bulk');
+const adminRoutes = require('./routes/admin');
 
 // Connect to database
 connectDB();
@@ -97,6 +99,8 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/bulk', bulkRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

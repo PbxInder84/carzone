@@ -6,13 +6,16 @@ import { getCategories } from '../features/categories/categorySlice';
 import ProductCard from '../components/products/ProductCard';
 import Spinner from '../components/layout/Spinner';
 import { 
-  FaCar, FaTools, FaWrench, FaLightbulb, FaStar, FaChevronDown, 
+  FaCar, FaTools, FaWrench, FaStar, FaChevronDown, 
   FaShieldAlt, FaShippingFast, FaCreditCard, FaTag, FaOilCan,
-  FaBolt, FaTachometerAlt, FaCog, FaArrowRight, FaHeadset, FaRedo
+  FaBolt, FaTachometerAlt, FaCog, FaArrowRight, FaHeadset, FaRedo,
+  FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 import { useSettings } from '../utils/useSettings';
-import { useSiteSettings } from '../components/layout/SettingsContext';
-import { formatCurrency } from '../utils/formatters';
+
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -20,8 +23,6 @@ const Home = () => {
   const { products, isLoading: productsLoading } = useSelector((state) => state.products);
   const { categories, isLoading: categoriesLoading } = useSelector((state) => state.categories);
   
-  // Load settings with useSettings hook
-  const { getSetting, isLoading: settingsLoading } = useSettings();
   
   useEffect(() => {
     dispatch(getProducts({ limit: 8, sort_by: 'created_at', sort_dir: 'DESC' }));
@@ -59,13 +60,78 @@ const Home = () => {
   ];
   
   const displayCategories = !categoriesLoading && categories && categories.length > 0
-    ? categories.slice(0, 4).map(cat => ({
+    ? categories.map(cat => ({
         id: cat.id,
         name: cat.name,
         icon: getCategoryIcon(cat.name),
-        description: cat.description || `Explore our ${cat.name} collection`
+        description: cat.description || `Explore our ${cat.name} collection`,
+        image_url: cat.image_url
       }))
     : fallbackCategories;
+
+  // Custom arrows for the slider
+  const PrevArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 cursor-pointer bg-white dark:bg-gray-700 rounded-full shadow-md p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+        style={{ ...style }}
+        onClick={onClick}
+      >
+        <FaChevronLeft className="text-highlight-500" />
+      </div>
+    );
+  };
+
+  const NextArrow = (props) => {
+    const { className, style, onClick } = props;
+    return (
+      <div
+        className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 cursor-pointer bg-white dark:bg-gray-700 rounded-full shadow-md p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+        style={{ ...style }}
+        onClick={onClick}
+      >
+        <FaChevronRight className="text-highlight-500" />
+      </div>
+    );
+  };
+
+  // Slider settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    prevArrow: <PrevArrow />,
+    nextArrow: <NextArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          initialSlide: 2
+        }
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1
+        }
+      }
+    ]
+  };
   
   return (
     <div className="pt-0 mt-0">
@@ -131,36 +197,40 @@ const Home = () => {
       </section>
       
       {/* Categories Section */}
-      <section className="py-12 bg-slate-900">
+      <section className="py-12 bg-slate-900 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 font-poppins text-white">
             Shop by Category
           </h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {categoriesLoading ? (
-              <div className="col-span-4 flex justify-center py-12">
-                <Spinner />
-              </div>
-            ) : (
-              displayCategories.map((category, index) => (
-                <Link key={index} to={`/products${category.id ? `?category_id=${category.id}` : ''}`}>
-                  <div className="bg-white rounded-card shadow-card hover:shadow-lg transition-shadow p-6 text-center h-full flex flex-col items-center justify-center border border-soft-200">
-                    <div className="bg-slate-100 text-highlight-500 rounded-full p-3 mb-4">
-                      {category.icon}
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2 font-poppins text-slate-800">{category.name}</h3>
-                    <p className="text-slate-600 text-sm mt-auto">this is category {index + 1}</p>
+          {categoriesLoading ? (
+            <div className="flex justify-center py-12">
+              <Spinner />
+            </div>
+          ) : (
+            <div className="relative px-8">
+              <Slider {...sliderSettings}>
+                {displayCategories.map((category, index) => (
+                  <div key={index} className="px-2">
+                    <Link to={`/products${category.id ? `?category_id=${category.id}` : ''}`}>
+                      <div className="bg-white dark:bg-gray-800 rounded-card shadow-card hover:shadow-lg transition-shadow p-6 text-center h-full flex flex-col items-center justify-center border border-soft-200 dark:border-gray-700">
+                        <div className="bg-slate-100 dark:bg-gray-700 text-highlight-500 rounded-full p-3 mb-4">
+                          {category.icon}
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2 font-poppins text-slate-800 dark:text-white">{category.name}</h3>
+                        <p className="text-slate-600 dark:text-gray-300 text-sm mt-auto">Explore our collection</p>
+                      </div>
+                    </Link>
                   </div>
-                </Link>
-              ))
-            )}
-          </div>
+                ))}
+              </Slider>
+            </div>
+          )}
         </div>
       </section>
       
       {/* Featured Products */}
-      <section className="py-16 bg-slate-900 text-white">
+      <section className="py-16 bg-slate-900 dark:bg-gray-900 text-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold font-poppins text-white">Featured Products</h2>
@@ -182,37 +252,37 @@ const Home = () => {
       </section>
       
       {/* Why Choose Us */}
-      <section className="py-16 bg-slate-800">
+      <section className="py-16 bg-slate-800 dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 font-poppins text-white">Why Choose Us</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-card shadow-card text-center">
-              <div className="inline-block p-4 bg-slate-900 rounded-full mb-4">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-card shadow-card text-center">
+              <div className="inline-block p-4 bg-slate-900 dark:bg-gray-900 rounded-full mb-4">
                 <FaStar className="text-3xl text-highlight-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800">Premium Quality</h3>
-              <p className="text-slate-400">
+              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800 dark:text-white">Premium Quality</h3>
+              <p className="text-slate-400 dark:text-gray-300">
                 All our products are carefully selected to ensure the highest quality standards.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-card shadow-card text-center">
-              <div className="inline-block p-4 bg-slate-900 rounded-full mb-4">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-card shadow-card text-center">
+              <div className="inline-block p-4 bg-slate-900 dark:bg-gray-900 rounded-full mb-4">
                 <FaHeadset className="text-3xl text-highlight-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800">Expert Support</h3>
-              <p className="text-slate-400">
+              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800 dark:text-white">Expert Support</h3>
+              <p className="text-slate-400 dark:text-gray-300">
                 Our team of automotive experts is available 24/7 to assist you with any questions.
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-card shadow-card text-center">
-              <div className="inline-block p-4 bg-slate-900 rounded-full mb-4">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-card shadow-card text-center">
+              <div className="inline-block p-4 bg-slate-900 dark:bg-gray-900 rounded-full mb-4">
                 <FaRedo className="text-3xl text-highlight-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800">Easy Returns</h3>
-              <p className="text-slate-400">
+              <h3 className="text-xl font-semibold mb-2 font-poppins text-slate-800 dark:text-white">Easy Returns</h3>
+              <p className="text-slate-400 dark:text-gray-300">
                 Not satisfied? Return your products within 30 days for a full refund.
               </p>
             </div>
@@ -221,7 +291,7 @@ const Home = () => {
       </section>
       
       {/* Promo Section */}
-      <section className="py-16 bg-slate-800 text-white">
+      <section className="py-16 bg-slate-800 dark:bg-gray-800 text-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-8 md:mb-0 md:mr-8">
@@ -233,7 +303,7 @@ const Home = () => {
                 Shop Now
               </Link>
             </div>
-            <div className="w-full md:w-1/3 bg-slate-700 p-6 rounded-card">
+            <div className="w-full md:w-1/3 bg-slate-700 dark:bg-gray-700 p-6 rounded-card">
               <h3 className="text-2xl font-bold mb-4 text-highlight-500 font-poppins">Special Offer</h3>
               <p className="mb-4 text-gray-300">
                 Get <span className="text-highlight-500 font-bold">15% OFF</span> on your first order
@@ -241,7 +311,7 @@ const Home = () => {
               <p className="text-sm text-gray-400 mb-4">
                 Use code: <span className="font-mono font-bold">FIRST15</span>
               </p>
-              <div className="border-t border-slate-600 pt-4 text-sm text-gray-400">
+              <div className="border-t border-slate-600 dark:border-gray-600 pt-4 text-sm text-gray-400">
                 *Offer valid for new customers only
               </div>
             </div>
@@ -250,7 +320,7 @@ const Home = () => {
       </section>
       
       {/* Customer Testimonials */}
-      <section className="py-16 bg-slate-900">
+      <section className="py-16 bg-slate-900 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4 text-white">What Our Customers Say</h2>
@@ -259,7 +329,7 @@ const Home = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="bg-white p-6 rounded-xl shadow-md relative">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-highlight-500 text-white rounded-full flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -272,19 +342,19 @@ const Home = () => {
                   ))}
                 </div>
               </div>
-              <p className="text-slate-400 italic mb-4">"The quality of the parts I received was exceptional. Everything fit perfectly, and the shipping was faster than expected. Definitely my go-to source for car parts now!"</p>
+              <p className="text-slate-400 dark:text-gray-300 italic mb-4">"The quality of the parts I received was exceptional. Everything fit perfectly, and the shipping was faster than expected. Definitely my go-to source for car parts now!"</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Customer" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-600">Bangalore, Karnataka</h4>
+                  <h4 className="font-medium text-slate-600 dark:text-gray-300">Bangalore, Karnataka</h4>
                 </div>
               </div>
             </div>
             
             {/* Testimonial 2 */}
-            <div className="bg-white p-6 rounded-xl shadow-md relative">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-highlight-500 text-white rounded-full flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -297,19 +367,19 @@ const Home = () => {
                   ))}
                 </div>
               </div>
-              <p className="text-slate-400 italic mb-4">"I was skeptical about ordering car accessories online, but the customer service team was incredibly helpful. They guided me through the selection process and even followed up after delivery."</p>
+              <p className="text-slate-400 dark:text-gray-300 italic mb-4">"I was skeptical about ordering car accessories online, but the customer service team was incredibly helpful. They guided me through the selection process and even followed up after delivery."</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Customer" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-600">Delhi, NCR</h4>
+                  <h4 className="font-medium text-slate-600 dark:text-gray-300">Delhi, NCR</h4>
                 </div>
               </div>
             </div>
             
             {/* Testimonial 3 */}
-            <div className="bg-white p-6 rounded-xl shadow-md relative">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-highlight-500 text-white rounded-full flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -322,13 +392,13 @@ const Home = () => {
                   ))}
                 </div>
               </div>
-              <p className="text-slate-400 italic mb-4">"The performance upgrade kit I purchased has completely transformed my driving experience. The installation instructions were clear, and the results exceeded my expectations. Worth every rupee!"</p>
+              <p className="text-slate-400 dark:text-gray-300 italic mb-4">"The performance upgrade kit I purchased has completely transformed my driving experience. The installation instructions were clear, and the results exceeded my expectations. Worth every rupee!"</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Customer" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-slate-600">Mumbai, Maharashtra</h4>
+                  <h4 className="font-medium text-slate-600 dark:text-gray-300">Mumbai, Maharashtra</h4>
                 </div>
               </div>
             </div>
@@ -346,11 +416,11 @@ const Home = () => {
       </section>
       
       {/* FAQ Section */}
-      <section className="py-16 bg-gray-100">
+      <section className="py-16 bg-slate-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-slate-800">Frequently Asked Questions</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Have questions? We've got answers to the most common questions our customers ask.</p>
+            <h2 className="text-3xl font-bold mb-4 text-white">Frequently Asked Questions</h2>
+            <p className="text-white max-w-2xl mx-auto">Have questions? We've got answers to the most common questions our customers ask.</p>
           </div>
           
           <div className="max-w-3xl mx-auto divide-y divide-gray-200">
@@ -358,14 +428,14 @@ const Home = () => {
             <div className="py-5">
               <details className="group">
                 <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
-                  <span className="text-lg font-semibold text-slate-800">How long does shipping take?</span>
+                  <span className="text-lg font-semibold text-white">How long does shipping take?</span>
                   <span className="transition group-open:rotate-180">
                     <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" className="text-highlight-500">
                       <path d="M6 9l6 6 6-6"></path>
                     </svg>
                   </span>
                 </summary>
-                <p className="text-slate-600 mt-3 group-open:animate-fadeIn">
+                <p className="text-white mt-3 group-open:animate-fadeIn">
                   Standard shipping usually takes 3-5 business days across major Indian cities. For remote areas, it may take 5-7 business days. We offer express shipping options at checkout for faster delivery.
                 </p>
               </details>
@@ -375,14 +445,14 @@ const Home = () => {
             <div className="py-5">
               <details className="group">
                 <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
-                  <span className="text-lg font-semibold text-slate-800">What is your return policy?</span>
+                  <span className="text-lg font-semibold text-white">What is your return policy?</span>
                   <span className="transition group-open:rotate-180">
                     <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" className="text-highlight-500">
                       <path d="M6 9l6 6 6-6"></path>
                     </svg>
                   </span>
                 </summary>
-                <p className="text-slate-600 mt-3 group-open:animate-fadeIn">
+                <p className="text-white mt-3 group-open:animate-fadeIn">
                   We offer a 30-day return policy on most products. If you're not satisfied with your purchase, you can return it within 30 days for a full refund or exchange. Please note that the items must be in their original condition and packaging.
                 </p>
               </details>
@@ -392,14 +462,14 @@ const Home = () => {
             <div className="py-5">
               <details className="group">
                 <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
-                  <span className="text-lg font-semibold text-slate-800">Are the products compatible with all car models?</span>
+                  <span className="text-lg font-semibold text-white">Are the products compatible with all car models?</span>
                   <span className="transition group-open:rotate-180">
                     <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" className="text-highlight-500">
                       <path d="M6 9l6 6 6-6"></path>
                     </svg>
                   </span>
                 </summary>
-                <p className="text-slate-600 mt-3 group-open:animate-fadeIn">
+                <p className="text-white mt-3 group-open:animate-fadeIn">
                   Each product listing includes compatibility information. You can use our vehicle finder tool to check if a product fits your specific car make and model. If you're unsure, our customer service team is always available to assist you.
                 </p>
               </details>
@@ -409,14 +479,14 @@ const Home = () => {
             <div className="py-5">
               <details className="group">
                 <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
-                  <span className="text-lg font-semibold text-slate-800">Do you offer installation services?</span>
+                  <span className="text-lg font-semibold text-white">Do you offer installation services?</span>
                   <span className="transition group-open:rotate-180">
                     <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" className="text-highlight-500">
                       <path d="M6 9l6 6 6-6"></path>
                     </svg>
                   </span>
                 </summary>
-                <p className="text-slate-600 mt-3 group-open:animate-fadeIn">
+                <p className="text-white mt-3 group-open:animate-fadeIn">
                   Yes, we partner with certified mechanics across major Indian cities. During checkout, you can select the installation service option, and our team will coordinate with a local partner in your area. Additional charges may apply based on the complexity of installation.
                 </p>
               </details>

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaShoppingCart, FaUserAlt, FaSignInAlt, FaUserPlus, FaSearch, FaBars, FaTimes, FaCar } from 'react-icons/fa';
 import { logout } from '../../features/auth/authSlice';
+import ThemeToggle from '../ThemeToggle';
 
 
 const Header = () => {
@@ -19,6 +20,7 @@ const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
   
   const isHomePage = location.pathname === '/';
+  const isProductsPage = location.pathname === '/products';
   
   // Close mobile menu when route changes
   useEffect(() => {
@@ -77,7 +79,7 @@ const Header = () => {
   
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
+      className={`${isProductsPage ? 'absolute' : 'fixed'} top-0 left-0 right-0 z-30 transition-all duration-300 ${
         isHomePage && !scrolled 
           ? 'bg-transparent backdrop-blur-0' 
           : scrolled 
@@ -108,9 +110,9 @@ const Header = () => {
               to="/" 
               className={`${
                 location.pathname === '/'
-                  ? 'bg-primary-700 text-white'
-                  : 'text-gray-100 hover:bg-primary-700 hover:text-white'
-              } px-3 py-2 rounded-md text-sm font-medium transition duration-300`}
+                  ? 'text-white relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-highlight-500'
+                  : 'text-gray-100 hover:text-white relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-highlight-500 hover:after:w-full after:transition-all after:duration-300'
+              } px-3 py-2 text-sm font-medium transition duration-300`}
               aria-current={location.pathname === '/' ? 'page' : undefined}
             >
               Home
@@ -119,9 +121,9 @@ const Header = () => {
               to="/products" 
               className={`${
                 location.pathname === '/products'
-                  ? 'bg-primary-700 text-white'
-                  : 'text-gray-100 hover:bg-primary-700 hover:text-white'
-              } px-3 py-2 rounded-md text-sm font-medium transition duration-300`}
+                  ? 'text-white relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-highlight-500'
+                  : 'text-gray-100 hover:text-white relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-highlight-500 hover:after:w-full after:transition-all after:duration-300'
+              } px-3 py-2 text-sm font-medium transition duration-300`}
               aria-current={location.pathname === '/products' ? 'page' : undefined}
             >
               Products
@@ -130,9 +132,9 @@ const Header = () => {
               to="/about" 
               className={`${
                 location.pathname === '/about'
-                  ? 'bg-primary-700 text-white'
-                  : 'text-gray-100 hover:bg-primary-700 hover:text-white'
-              } px-3 py-2 rounded-md text-sm font-medium transition duration-300`}
+                  ? 'text-white relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-highlight-500'
+                  : 'text-gray-100 hover:text-white relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-highlight-500 hover:after:w-full after:transition-all after:duration-300'
+              } px-3 py-2 text-sm font-medium transition duration-300`}
               aria-current={location.pathname === '/about' ? 'page' : undefined}
             >
               About
@@ -141,9 +143,9 @@ const Header = () => {
               to="/contact" 
               className={`${
                 location.pathname === '/contact'
-                  ? 'bg-primary-700 text-white'
-                  : 'text-gray-100 hover:bg-primary-700 hover:text-white'
-              } px-3 py-2 rounded-md text-sm font-medium transition duration-300`}
+                  ? 'text-white relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-highlight-500'
+                  : 'text-gray-100 hover:text-white relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-highlight-500 hover:after:w-full after:transition-all after:duration-300'
+              } px-3 py-2 text-sm font-medium transition duration-300`}
               aria-current={location.pathname === '/contact' ? 'page' : undefined}
             >
               Contact
@@ -171,6 +173,9 @@ const Header = () => {
           
           {/* User Actions */}
           <div className="hidden md:flex items-center space-x-5">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {user && (
               <div className="relative">
                 <Link to="/cart" className="relative group">
@@ -213,14 +218,14 @@ const Header = () => {
                     </div>
                     <Link
                       to="/profile"
-                      className="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-gray-100 hover:text-highlight-500"
+                      className="flex items-center px-4 py-2 text-sm text-slate-700 hover:text-highlight-500 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 hover:bg-highlight-500/5 transition-all duration-300"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <span className="mr-2">👤</span> My Profile
                     </Link>
                     <Link
                       to="/orders"
-                      className="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-gray-100 hover:text-highlight-500"
+                      className="flex items-center px-4 py-2 text-sm text-slate-700 hover:text-highlight-500 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 hover:bg-highlight-500/5 transition-all duration-300"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       <span className="mr-2">📦</span> My Orders
@@ -228,7 +233,7 @@ const Header = () => {
                     {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
                       <Link
                         to="/dashboard"
-                        className="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-gray-100 hover:text-highlight-500"
+                        className="flex items-center px-4 py-2 text-sm text-slate-700 hover:text-highlight-500 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 hover:bg-highlight-500/5 transition-all duration-300"
                         onClick={() => setIsDropdownOpen(false)}
                       >
                         <span className="mr-2">📊</span> Dashboard
@@ -236,7 +241,7 @@ const Header = () => {
                     ) : null}
                     <button
                       onClick={onLogout}
-                      className="flex items-center w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-gray-100 hover:text-highlight-500 border-t border-gray-200"
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-slate-700 hover:text-highlight-500 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 hover:bg-highlight-500/5 transition-all duration-300 border-t border-gray-200"
                     >
                       <span className="mr-2">🚪</span> Logout
                     </button>
@@ -245,11 +250,12 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link to="/login" className="hover:text-highlight-500 transition duration-300 flex items-center space-x-1 px-3 py-1 rounded-md hover:bg-primary-700/50">
-                  <FaSignInAlt className="text-lg" />
-                  <span className="hidden lg:inline-block">Login</span>
+                <Link to="/login" className="text-white border border-transparent hover:border-highlight-500 transition-all duration-300 flex items-center space-x-1 px-3 py-1.5 rounded-md relative overflow-hidden group">
+                  <FaSignInAlt className="text-lg z-10" />
+                  <span className="hidden lg:inline-block z-10">Login</span>
+                  <span className="absolute inset-0 w-0 bg-highlight-500/10 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link to="/register" className="text-white bg-secondary-600 hover:bg-secondary-500 transition-all duration-300 px-4 py-1.5 rounded-md flex items-center space-x-1 shadow-md hover:shadow-lg">
+                <Link to="/register" className="text-white border border-highlight-500 hover:bg-highlight-500/10 transition-all duration-300 px-4 py-1.5 rounded-md flex items-center space-x-1 shadow-sm hover:shadow-md">
                   <FaUserPlus className="text-lg" />
                   <span className="hidden lg:inline-block">Register</span>
                 </Link>
@@ -259,7 +265,7 @@ const Header = () => {
           
           {/* Mobile Menu Button */}
           <button 
-            className="md:hidden text-white focus:outline-none p-1 rounded-md hover:bg-primary-700/50 transition-colors duration-300"
+            className="md:hidden text-white focus:outline-none p-1.5 rounded-md border border-transparent hover:border-highlight-500 transition-all duration-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -290,14 +296,19 @@ const Header = () => {
                 </button>
               </form>
               
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium text-gray-500">Theme</h3>
+                <ThemeToggle />
+              </div>
+              
               <nav className="flex flex-col space-y-3">
                 <Link 
                   to="/" 
                   className={`${
                     location.pathname === '/'
-                      ? 'bg-gray-100 text-slate-800'
-                      : 'text-slate-800 hover:bg-gray-100'
-                  } py-2 px-3 rounded-md transition duration-300`}
+                      ? 'text-slate-800 relative border-l-4 border-highlight-500 pl-2 font-medium'
+                      : 'text-slate-800 hover:border-l-4 hover:border-highlight-500 hover:pl-2 border-l-4 border-transparent pl-2'
+                  } py-2 transition-all duration-300 flex items-center`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
@@ -306,9 +317,9 @@ const Header = () => {
                   to="/products" 
                   className={`${
                     location.pathname === '/products'
-                      ? 'bg-gray-100 text-slate-800'
-                      : 'text-slate-800 hover:bg-gray-100'
-                  } py-2 px-3 rounded-md transition duration-300`}
+                      ? 'text-slate-800 relative border-l-4 border-highlight-500 pl-2 font-medium'
+                      : 'text-slate-800 hover:border-l-4 hover:border-highlight-500 hover:pl-2 border-l-4 border-transparent pl-2'
+                  } py-2 transition-all duration-300 flex items-center`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Products
@@ -317,9 +328,9 @@ const Header = () => {
                   to="/about" 
                   className={`${
                     location.pathname === '/about'
-                      ? 'bg-gray-100 text-slate-800'
-                      : 'text-slate-800 hover:bg-gray-100'
-                  } py-2 px-3 rounded-md transition duration-300`}
+                      ? 'text-slate-800 relative border-l-4 border-highlight-500 pl-2 font-medium'
+                      : 'text-slate-800 hover:border-l-4 hover:border-highlight-500 hover:pl-2 border-l-4 border-transparent pl-2'
+                  } py-2 transition-all duration-300 flex items-center`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About
@@ -328,9 +339,9 @@ const Header = () => {
                   to="/contact" 
                   className={`${
                     location.pathname === '/contact'
-                      ? 'bg-gray-100 text-slate-800'
-                      : 'text-slate-800 hover:bg-gray-100'
-                  } py-2 px-3 rounded-md transition duration-300`}
+                      ? 'text-slate-800 relative border-l-4 border-highlight-500 pl-2 font-medium'
+                      : 'text-slate-800 hover:border-l-4 hover:border-highlight-500 hover:pl-2 border-l-4 border-transparent pl-2'
+                  } py-2 transition-all duration-300 flex items-center`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
@@ -369,14 +380,14 @@ const Header = () => {
                     <div className="space-y-1">
                       <Link
                         to="/profile"
-                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:bg-gray-100 transition duration-300"
+                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:text-highlight-500 hover:bg-highlight-500/5 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 pl-3 hover:pl-4 transition-all duration-300"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         My Profile
                       </Link>
                       <Link
                         to="/orders"
-                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:bg-gray-100 transition duration-300"
+                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:text-highlight-500 hover:bg-highlight-500/5 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 pl-3 hover:pl-4 transition-all duration-300"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         My Orders
@@ -384,7 +395,7 @@ const Header = () => {
                       {user.data?.role === 'seller' || user.data?.role === 'admin' ? (
                         <Link
                           to="/dashboard"
-                          className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:bg-gray-100 transition duration-300"
+                          className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:text-highlight-500 hover:bg-highlight-500/5 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 pl-3 hover:pl-4 transition-all duration-300"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           Dashboard
@@ -395,7 +406,7 @@ const Header = () => {
                           onLogout();
                           setIsMenuOpen(false);
                         }}
-                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:bg-red-100 hover:text-red-600 transition duration-300 mt-2"
+                        className="block w-full text-left px-3 py-2 rounded-md text-slate-700 hover:text-highlight-500 hover:bg-highlight-500/5 border-l-2 border-transparent hover:border-l-2 hover:border-highlight-500 pl-3 hover:pl-4 transition-all duration-300 mt-2"
                       >
                         Logout
                       </button>
@@ -405,7 +416,7 @@ const Header = () => {
                   <div className="flex flex-col space-y-2">
                     <Link 
                       to="/login" 
-                      className="block w-full text-center px-4 py-2 text-slate-700 hover:bg-gray-100 rounded-md transition duration-300"
+                      className="block w-full text-center px-4 py-2 text-slate-700 border border-gray-200 hover:border-highlight-500 hover:text-highlight-500 rounded-md transition-all duration-300"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <FaSignInAlt className="inline-block mr-2" />
@@ -413,7 +424,7 @@ const Header = () => {
                     </Link>
                     <Link 
                       to="/register" 
-                      className="block w-full text-center px-4 py-2 text-white bg-highlight-500 hover:bg-highlight-600 rounded-md transition duration-300"
+                      className="block w-full text-center px-4 py-2 text-white bg-transparent border border-highlight-500 bg-highlight-500 hover:bg-transparent hover:text-highlight-500 rounded-md transition-all duration-300"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <FaUserPlus className="inline-block mr-2" />

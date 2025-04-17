@@ -30,9 +30,14 @@ const Product = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    category: {
-      type: DataTypes.STRING(100),
+    category_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'product_categories',
+        key: 'id'
+      },
+      onDelete: 'CASCADE'
     },
     stock_quantity: {
       type: DataTypes.INTEGER,
@@ -43,15 +48,6 @@ const Product = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'product_categories',
-        key: 'id'
-      },
-      onDelete: 'SET NULL'
-    }
   },
   {
     tableName: 'products',
@@ -64,11 +60,11 @@ const Product = sequelize.define(
         fields: ['seller_id']
       },
       {
-        name: 'idx_products_category',
-        fields: ['category']
+        name: 'idx_products_category_id',
+        fields: ['category_id']
       }
     ]
   }
 );
 
-module.exports = Product; 
+module.exports = Product;

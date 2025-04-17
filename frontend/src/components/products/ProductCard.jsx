@@ -58,7 +58,7 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="car-card group relative overflow-hidden bg-white rounded-card shadow-card border border-soft-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="car-card group relative overflow-hidden bg-white dark:bg-gray-800 rounded-card shadow-card border border-soft-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* Sale badge */}
       {product.discount_percent > 0 && (
         <div className="absolute top-3 left-3 z-10 bg-highlight-500 text-white text-xs font-bold py-1 px-2 rounded-md">
@@ -89,13 +89,13 @@ const ProductCard = ({ product }) => {
       {/* Quick action buttons - visible on hover */}
       <div className="absolute right-3 top-1/3 transform -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col gap-2">
         <button 
-          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 transition-colors duration-300"
+          className="w-9 h-9 bg-white dark:bg-gray-700 shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-300"
           title="Add to Wishlist"
         >
           <FaHeart className="text-sm" />
         </button>
         <button 
-          className="w-9 h-9 bg-white shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 transition-colors duration-300"
+          className="w-9 h-9 bg-white dark:bg-gray-700 shadow-md rounded-full flex items-center justify-center text-highlight-500 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-300"
           title="Quick View"
         >
           <FaEye className="text-sm" />
@@ -125,13 +125,13 @@ const ProductCard = ({ product }) => {
         
         {/* Product Name */}
         <Link to={`/product/${product.id}`} className="block mt-1">
-          <h3 className="text-lg font-medium text-slate-800 hover:text-highlight-500 transition-colors duration-300 line-clamp-1 font-poppins">
+          <h3 className="text-lg font-medium text-slate-800 dark:text-white hover:text-highlight-500 dark:hover:text-highlight-400 transition-colors duration-300 line-clamp-1 font-poppins">
             {product.name}
           </h3>
         </Link>
         
         {/* Description - limited to 2 lines */}
-        <p className="mt-1 text-sm text-slate-600 line-clamp-2">
+        <p className="mt-1 text-sm text-slate-600 dark:text-gray-300 line-clamp-2">
           {product.description}
         </p>
         
@@ -140,7 +140,7 @@ const ProductCard = ({ product }) => {
           <div className="flex">
             {renderStars()}
           </div>
-          <span className="ml-1 text-xs text-slate-600">
+          <span className="ml-1 text-xs text-slate-600 dark:text-gray-400">
             ({product.reviews ? product.reviews.length : 0})
           </span>
         </div>
@@ -152,7 +152,7 @@ const ProductCard = ({ product }) => {
               <span className="price text-highlight-500">
                 {formatCurrency((parseFloat(product.price || 0) * (1 - product.discount_percent / 100)))}
               </span>
-              <span className="text-sm text-slate-500 line-through">
+              <span className="text-sm text-slate-500 dark:text-gray-400 line-through">
                 {formatCurrency(parseFloat(product.price || 0))}
               </span>
             </>
@@ -170,7 +170,7 @@ const ProductCard = ({ product }) => {
             disabled={product.stock_quantity === 0}
             className={`${
               product.stock_quantity === 0
-                ? 'bg-gray-300 cursor-not-allowed'
+                ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
                 : 'bg-highlight-500 hover:bg-highlight-600 hover:scale-[1.02]'
             } text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-highlight-400/50`}
             title={product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}

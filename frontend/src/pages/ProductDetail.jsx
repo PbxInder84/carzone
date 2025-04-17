@@ -18,6 +18,9 @@ const ProductDetail = () => {
   const { user } = useSelector((state) => state.auth);
   const { canReview } = useSelector((state) => state.reviews);
   const [quantity, setQuantity] = useState(1);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     dispatch(getProduct(id));
@@ -62,6 +65,13 @@ const ProductDetail = () => {
     }
   };
 
+  const handleSubmitReview = (e) => {
+    e.preventDefault();
+    setIsSubmittingReview(true);
+    // Handle form submission
+    setIsSubmittingReview(false);
+  };
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -69,10 +79,10 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white shadow-md rounded-lg p-6 text-center">
+        <div className="bg-white shadow-md rounded-lg p-6 text-center border border-gray-100 hover:border-highlight-500 transition-all duration-300">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h2>
           <p className="text-gray-600 mb-4">The product you're looking for doesn't exist or has been removed.</p>
-          <Link to="/products" className="inline-flex items-center text-primary-600 hover:text-primary-800">
+          <Link to="/products" className="inline-flex items-center text-highlight-500 hover:text-highlight-700">
             <FaArrowLeft className="mr-2" /> Back to Products
           </Link>
         </div>
@@ -89,12 +99,12 @@ const ProductDetail = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link to="/products" className="inline-flex items-center text-primary-600 hover:text-primary-800">
+        <Link to="/products" className="inline-flex items-center text-highlight-500 hover:text-highlight-700 transition-colors duration-300">
           <FaArrowLeft className="mr-2" /> Back to Products
         </Link>
       </div>
       
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100 hover:border-highlight-500 transition-all duration-300">
         <div className="md:flex">
           {/* Product Image */}
           <div className="md:w-1/2">
@@ -102,7 +112,7 @@ const ProductDetail = () => {
               <img 
                 src={getImageUrl(product.image_url)} 
                 alt={product.name}
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://via.placeholder.com/600x400?text=No+Image';
@@ -133,7 +143,7 @@ const ProductDetail = () => {
               </span>
             </div>
             
-            <div className="text-2xl font-bold text-primary-600 mb-4">
+            <div className="text-2xl font-bold text-highlight-500 mb-4">
               {formatCurrency(parseFloat(product.price))}
             </div>
             
@@ -159,7 +169,7 @@ const ProductDetail = () => {
                   id="quantity"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="mt-1 block w-20 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  className="mt-1 block w-20 rounded-md border-gray-300 shadow-sm focus:border-highlight-500 focus:ring-highlight-500"
                   disabled={product.stock_quantity <= 0}
                 >
                   {[...Array(Math.min(10, product.stock_quantity || 0))].map((_, i) => (
@@ -173,9 +183,9 @@ const ProductDetail = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={product.stock_quantity <= 0}
-                className={`flex items-center px-6 py-3 rounded-md text-white font-medium ${
+                className={`flex items-center px-6 py-3 rounded-md text-white font-medium transition-all duration-300 ${
                   product.stock_quantity > 0
-                    ? 'bg-primary-600 hover:bg-primary-700'
+                    ? 'bg-highlight-500 hover:bg-highlight-600'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}
               >
@@ -192,13 +202,59 @@ const ProductDetail = () => {
           
           {/* Only show review form for logged in users who can review */}
           {user && canReview && (
-            <ReviewForm productId={product.id} onReviewSubmitted={refreshReviews} />
+            <form onSubmit={handleSubmitReview} className="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-highlight-500 transition-all duration-300">
+              <h4 className="text-md font-medium text-gray-800 mb-3">Write a Review</h4>
+              <div className="mb-4">
+                <label htmlFor="rating" className="block text-sm font-medium text-gray-700 mb-1">
+                  Rating
+                </label>
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <button
+                      type="button"
+                      key={i}
+                      onClick={() => setReviewRating(i + 1)}
+                      className="focus:outline-none"
+                    >
+                      <FaStar 
+                        className={`${
+                          i < reviewRating 
+                            ? 'text-yellow-400' 
+                            : 'text-gray-300'
+                        } text-xl mr-1 transition-colors duration-200 cursor-pointer hover:text-yellow-400`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="review" className="block text-sm font-medium text-gray-700 mb-1">
+                  Review
+                </label>
+                <textarea
+                  id="review"
+                  rows="4"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-highlight-500 focus:border-highlight-500"
+                  placeholder="Share your thoughts about this product"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmittingReview}
+                className="w-full bg-highlight-500 hover:bg-highlight-600 text-white font-medium py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-highlight-500 transition-all duration-300"
+              >
+                {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+              </button>
+            </form>
           )}
           
           {reviews.length > 0 ? (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-200 pb-4">
+                <div key={review.id} className="border-b border-gray-200 pb-4 hover:border-highlight-500 transition-colors duration-300">
                   <div className="flex items-center mb-2">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (

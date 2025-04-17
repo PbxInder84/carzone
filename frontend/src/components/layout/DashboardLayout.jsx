@@ -12,7 +12,8 @@ import {
   FaSignOutAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaTags
+  FaTags,
+  FaFileImport
 } from 'react-icons/fa';
 import { logout } from '../../features/auth/authSlice';
 
@@ -63,6 +64,12 @@ const DashboardLayout = () => {
       label: 'Users',
       icon: <FaUsers />,
       path: '/dashboard/users',
+      roles: ['admin']
+    },
+    {
+      label: 'Bulk Import',
+      icon: <FaFileImport />,
+      path: '/dashboard/bulk-import',
       roles: ['admin']
     },
     {

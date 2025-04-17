@@ -55,7 +55,8 @@ const CheckoutPage = () => {
     paymentMethod: Yup.string().required('Payment method is required'),
     paymentDetails: Yup.string().when('paymentMethod', {
       is: (val) => val === 'upi' || val === 'net_banking',
-      then: Yup.string().required('Payment details are required for the selected payment method')
+      then: () => Yup.string().required('Payment details are required for the selected payment method'),
+      otherwise: () => Yup.string()
     })
   });
   

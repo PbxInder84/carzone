@@ -7,12 +7,14 @@ import {
   FaCar, 
   FaDollarSign,
   FaExternalLinkAlt,
-  FaTags
+  FaTags,
+  FaTrash
 } from 'react-icons/fa';
 import * as userService from '../db/userService';
 import * as orderService from '../db/orderService';
 import * as productService from '../db/productService';
 import * as categoryService from '../db/categoryService';
+import axios from 'axios';
 import Spinner from '../components/common/Spinner';
 
 const Dashboard = () => {
@@ -33,100 +35,103 @@ const Dashboard = () => {
   const [recentUsers, setRecentUsers] = useState([]);
   const [recentCategories, setRecentCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
+  
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Create an array of promises to fetch data
+      const promises = [];
+      const results = {};
+      
+      // Always fetch products and categories (both admin and seller need these)
+      promises.push(
+        productService.getAllProducts(1, 1)
+          .then(response => {
+            results.products = response;
+          })
+          .catch(error => {
+            console.error('Error fetching products:', error);
+          })
+      );
+      
+      promises.push(
+        categoryService.getAllCategories()
+          .then(response => {
+            results.categories = response;
+          })
+          .catch(error => {
+            console.error('Error fetching categories:', error);
+          })
+      );
+      
+      // Always fetch orders
+      promises.push(
+        orderService.getAllOrders(1, 5)
+          .then(response => {
+            results.orders = response;
+          })
+          .catch(error => {
+            console.error('Error fetching orders:', error);
+          })
+      );
+      
+      // Only fetch users if admin
+      if (isAdmin) {
+        promises.push(
+          userService.getAllUsers(1, 4)
+            .then(response => {
+              results.users = response;
+            })
+            .catch(error => {
+              console.error('Error fetching users:', error);
+            })
+        );
+      }
+      
+      // Wait for all promises to resolve
+      await Promise.allSettled(promises);
+      
+      // Calculate total revenue from orders if available
+      const totalRevenue = results.orders?.data?.reduce(
+        (acc, order) => acc + parseFloat(order.total_amount || 0), 
+        0
+      ) || 0;
+      
+      // Set stats based on available data
+      setStats({
+        totalProducts: results.products?.count || 0,
+        totalOrders: results.orders?.count || 0,
+        totalUsers: results.users?.count || 0,
+        totalRevenue: totalRevenue,
+        totalCategories: results.categories?.count || 0
+      });
+      
+      // Set recent data based on available results
+      if (results.orders) {
+        setRecentOrders(results.orders.data || []);
+      }
+      
+      if (results.users) {
+        setRecentUsers(results.users.data || []);
+      }
+      
+      if (results.categories) {
+        setRecentCategories(results.categories.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setIsLoading(true);
-      
-      try {
-        // Create an array of promises to fetch data
-        const promises = [];
-        const results = {};
-        
-        // Always fetch products and categories (both admin and seller need these)
-        promises.push(
-          productService.getAllProducts(1, 1)
-            .then(response => {
-              results.products = response;
-            })
-            .catch(error => {
-              console.error('Error fetching products:', error);
-            })
-        );
-        
-        promises.push(
-          categoryService.getAllCategories()
-            .then(response => {
-              results.categories = response;
-            })
-            .catch(error => {
-              console.error('Error fetching categories:', error);
-            })
-        );
-        
-        // Always fetch orders
-        promises.push(
-          orderService.getAllOrders(1, 5)
-            .then(response => {
-              results.orders = response;
-            })
-            .catch(error => {
-              console.error('Error fetching orders:', error);
-            })
-        );
-        
-        // Only fetch users if admin
-        if (isAdmin) {
-          promises.push(
-            userService.getAllUsers(1, 4)
-              .then(response => {
-                results.users = response;
-              })
-              .catch(error => {
-                console.error('Error fetching users:', error);
-              })
-          );
-        }
-        
-        // Wait for all promises to resolve
-        await Promise.allSettled(promises);
-        
-        // Calculate total revenue from orders if available
-        const totalRevenue = results.orders?.data?.reduce(
-          (acc, order) => acc + parseFloat(order.total_amount || 0), 
-          0
-        ) || 0;
-        
-        // Set stats based on available data
-        setStats({
-          totalProducts: results.products?.count || 0,
-          totalOrders: results.orders?.count || 0,
-          totalUsers: results.users?.count || 0,
-          totalRevenue: totalRevenue,
-          totalCategories: results.categories?.count || 0
-        });
-        
-        // Set recent data based on available results
-        if (results.orders) {
-          setRecentOrders(results.orders.data || []);
-        }
-        
-        if (results.users) {
-          setRecentUsers(results.users.data || []);
-        }
-        
-        if (results.categories) {
-          setRecentCategories(results.categories.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
     fetchDashboardData();
-  }, [isAdmin]);
+  }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
   
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -162,6 +167,44 @@ const Dashboard = () => {
     }
   };
   
+  const handleResetData = async () => {
+    if (resetConfirmText !== 'CONFIRM_RESET') {
+      alert('Please type CONFIRM_RESET to proceed with database reset');
+      return;
+    }
+    
+    try {
+      setIsResetting(true);
+      
+      const token = localStorage.getItem('user') 
+        ? JSON.parse(localStorage.getItem('user')).token 
+        : null;
+      
+      const response = await axios.delete('/api/admin/reset', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        data: { confirm: 'CONFIRM_RESET' }
+      });
+      
+      // Show success message
+      alert(response.data.message);
+      
+      // Reset state
+      setResetConfirmText('');
+      setShowResetConfirm(false);
+      
+      // Reload dashboard data
+      fetchDashboardData();
+    } catch (error) {
+      console.error('Error resetting database:', error);
+      alert(error.response?.data?.error || 'Failed to reset database');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+  
   if (isLoading) {
     return <Spinner />;
   }
@@ -169,11 +212,71 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="text-sm text-gray-600">
-          Welcome back, <span className="font-semibold">{user?.name || user?.data?.name}</span>
-        </p>
+        <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
+        <div className="flex items-center">
+          {isAdmin && (
+            <button 
+              onClick={() => setShowResetConfirm(true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm flex items-center mr-4"
+            >
+              <FaTrash className="mr-2" />
+              Reset Data
+            </button>
+          )}
+          <p className="text-sm text-gray-300">
+            Welcome back, <span className="font-semibold">{user?.name || user?.data?.name}</span>
+          </p>
+        </div>
       </div>
+      
+      {/* Reset Data Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold text-red-600 mb-4">Confirm Database Reset</h2>
+            <p className="text-gray-700 mb-4">
+              This action will delete all products, categories, orders, and reviews from the database.
+              This cannot be undone. User accounts will be preserved.
+            </p>
+            <p className="text-gray-700 mb-4 font-bold">
+              To confirm, type "CONFIRM_RESET" in the box below:
+            </p>
+            <input
+              type="text"
+              value={resetConfirmText}
+              onChange={(e) => setResetConfirmText(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 mb-4"
+              placeholder="CONFIRM_RESET"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowResetConfirm(false);
+                  setResetConfirmText('');
+                }}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md"
+                disabled={isResetting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetData}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center"
+                disabled={resetConfirmText !== 'CONFIRM_RESET' || isResetting}
+              >
+                {isResetting ? (
+                  <>
+                    <span className="mr-2">Resetting...</span>
+                    <Spinner size="sm" />
+                  </>
+                ) : (
+                  'Reset Database'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,17 +1,17 @@
 import React from 'react';
 
-const Spinner = ({ size = 'medium' }) => {
-  const sizeClass = {
-    small: 'h-6 w-6 border-2',
-    medium: 'h-12 w-12 border-2',
-    large: 'h-16 w-16 border-3'
+const Spinner = ({ size = 'default' }) => {
+  const sizeClasses = {
+    sm: 'h-4 w-4 border-2',
+    default: 'h-8 w-8 border-4',
+    lg: 'h-12 w-12 border-4'
   };
   
+  const spinnerSize = sizeClasses[size] || sizeClasses.default;
+  
   return (
-    <div className="flex justify-center items-center py-6">
-      <div 
-        className={`animate-spin rounded-full ${sizeClass[size]} border-t-primary-600 border-b-primary-600 border-r-transparent border-l-transparent`}
-      ></div>
+    <div className="flex justify-center items-center h-full">
+      <div className={`${spinnerSize} border-t-primary-500 border-primary-200 border-solid rounded-full animate-spin`}></div>
     </div>
   );
 };

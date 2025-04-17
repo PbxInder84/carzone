@@ -9,7 +9,6 @@ exports.getProducts = async (req, res, next) => {
   try {
     // Build query
     const { 
-      category, 
       category_id, 
       min_price, 
       max_price, 
@@ -26,11 +25,6 @@ exports.getProducts = async (req, res, next) => {
     
     // Filter options
     const whereClause = {};
-    
-    // Filter by category
-    if (category) {
-      whereClause.category = category;
-    }
     
     // Filter by category_id
     if (category_id) {
@@ -164,27 +158,18 @@ exports.createProduct = async (req, res, next) => {
       return next(new ErrorResponse('Only sellers and admins can create products', 403));
     }
 
+    // Validate category_id is provided
+    if (!req.body.category_id) {
+      return next(new ErrorResponse('Category ID is required', 400));
+    }
+
     // Handle image - prioritize file upload over URL
     if (req.file) {
       // Set the image URL for the product from uploaded file
       req.body.image_url = `/uploads/products/${req.file.filename}`;
     } else if (req.body.image_url) {
       // Use the provided image URL if no file was uploaded
-      // Keep the image_url as is - it's already in the req.body
       console.log('Using provided image URL:', req.body.image_url);
-    }
-
-    // Ensure category is a string
-    if (req.body.category && (Array.isArray(req.body.category) || typeof req.body.category === 'object')) {
-      console.log('Converting category from array/object to string:', req.body.category);
-      if (Array.isArray(req.body.category)) {
-        // If it's an array, take the last non-empty element
-        const validElements = req.body.category.filter(item => item && item.trim());
-        req.body.category = validElements.length > 0 ? validElements[validElements.length - 1] : '';
-      } else {
-        // If it's an object, convert to string representation or empty string
-        req.body.category = String(req.body.category) || '';
-      }
     }
 
     // Log the request body to debug
@@ -231,19 +216,6 @@ exports.updateProduct = async (req, res, next) => {
 
     // Log the request body for debugging
     console.log('Updating product with data:', req.body);
-
-    // Ensure category is a string
-    if (req.body.category && (Array.isArray(req.body.category) || typeof req.body.category === 'object')) {
-      console.log('Converting category from array/object to string:', req.body.category);
-      if (Array.isArray(req.body.category)) {
-        // If it's an array, take the last non-empty element
-        const validElements = req.body.category.filter(item => item && item.trim());
-        req.body.category = validElements.length > 0 ? validElements[validElements.length - 1] : '';
-      } else {
-        // If it's an object, convert to string representation or empty string
-        req.body.category = String(req.body.category) || '';
-      }
-    }
 
     // Update product
     await Product.update(req.body, {

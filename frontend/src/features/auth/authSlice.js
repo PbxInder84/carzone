@@ -64,13 +64,12 @@ export const login = createAsyncThunk(
 
 // Logout user
 export const logout = createAsyncThunk('auth/logout', async () => {
+  // Remove user from local storage
   localStorage.removeItem('user');
   
-  try {
-    await apiClient.get('/auth/logout');
-  } catch (error) {
-    console.log('Logout error:', error);
-  }
+  // No need to call API since the backend doesn't require any action
+  // and the 401 error is expected because the token is removed
+  return { success: true };
 });
 
 // Get current user profile

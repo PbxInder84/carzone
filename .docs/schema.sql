@@ -31,14 +31,13 @@ CREATE TABLE products (
     NAME VARCHAR(255) NOT NULL,
     DESCRIPTION TEXT,
     price DECIMAL(10,2) NOT NULL,
-    category VARCHAR(100) NOT NULL,
     stock_quantity INT NOT NULL DEFAULT 0,
     image_url VARCHAR(255),
-    category_id INT,
+    category_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE SET NULL
+    FOREIGN KEY (category_id) REFERENCES product_categories(id) ON DELETE CASCADE
 );
 
 -- Orders Table
@@ -118,12 +117,28 @@ CREATE TABLE order_coupons (
     FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
 );
 
+-- Site Settings Table
+CREATE TABLE site_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    `key` VARCHAR(100) UNIQUE NOT NULL,
+    `value` TEXT NOT NULL,
+    `type` ENUM('string', 'number', 'boolean', 'json') NOT NULL DEFAULT 'string',
+    `group` VARCHAR(50) NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    description TEXT,
+    is_public BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Indexes for Performance
 CREATE INDEX idx_products_seller_id ON products(seller_id);
-CREATE INDEX idx_products_category ON products(category);
+CREATE INDEX idx_products_category_id ON products(category_id);
 CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_items(product_id);
 CREATE INDEX idx_order_items_seller_id ON order_items(seller_id);
 CREATE INDEX idx_reviews_product_id ON reviews(product_id);
 CREATE INDEX idx_cart_user_id ON cart(user_id);
+CREATE INDEX idx_site_settings_group ON site_settings(`group`);
+CREATE INDEX idx_site_settings_public ON site_settings(is_public);
